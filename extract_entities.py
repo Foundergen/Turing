@@ -36,16 +36,14 @@ def build_alias_map():
         "剑桥": "剑桥大学",
         "普林斯顿": "普林斯顿大学",
         "恩尼格玛": "恩尼格玛密码机",
-        # 与正文无书名号提及合并，避免「报刊名」与机构重复节点（期刊《自然》保持书名号线 + Book，不并入「自然」）
         "《每日电讯报》": "每日电讯报",
     }
 
 
-# 书名号内实为报纸名时按机构投票；《自然》为学术期刊，与其它著作一致保留为 Book
 BOOK_TITLE_AS_ORGANIZATION = frozenset({"《每日电讯报》"})
 # 别名合并后仅 rule 的机构名，无 spaCy 时也要能保留
 RULE_ONLY_ORGANIZATION_ALLOWLIST = frozenset({"每日电讯报"})
-
+ 
 def map_spacy_label(label: str) -> str:
     if label == "PERSON":
         return "Person"
@@ -66,7 +64,6 @@ def guess_type_by_rule(entity_name: str) -> str:
         return "Event"
     if any(word in entity_name for word in ["机器", "密码机", "引擎", "破译机"]):
         return "Machine"
-    # 「测试」过宽易误伤普通词；缩短触发词，略抬准确率
     if any(word in entity_name for word in ["理论", "图灵测试", "生物学", "计算机科学"]):
         return "Concept"
     if "科学" in entity_name and len(entity_name) <= 8:
