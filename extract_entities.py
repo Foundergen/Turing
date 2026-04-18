@@ -31,6 +31,8 @@ def build_alias_map():
         "图灵": "艾伦·图灵",
         "Turing": "艾伦·图灵",
         "阿兰·图灵": "艾伦·图灵",
+        "艾伦": "艾伦·图灵",
+        "艾伦·麦席森·图灵": "艾伦·图灵",
         "二战": "第二次世界大战",
         "二次世界大战": "第二次世界大战",
         "剑桥": "剑桥大学",
@@ -142,6 +144,147 @@ def is_valid_entity_name(name: str) -> bool:
     if len(name) > 12 and re.search(r"[A-Za-z]", name) and not re.search(r"[\u4e00-\u9fff]", name):
         return False
     return True
+
+ORG_SUFFIXES = (
+    "大学", "学院", "学校", "实验室", "研究所", "研究院", "学会",
+    "协会", "政府", "海军", "司法部", "国会", "议院",
+)
+LOC_SUFFIXES = ("国", "州", "郡", "市", "省", "县", "岛", "洋", "海", "城", "洲")
+EVENT_HINTS = ("战争", "运动会", "审判", "纪念", "大会")
+MACHINE_HINTS = ("机器", "密码机", "引擎", "计算机", "设备")
+CONCEPT_HINTS = ("理论", "测试", "智能", "科学", "主义", "方法")
+PERSON_CONTEXT_HINTS = (
+    "出生", "生于", "提出", "认为", "证明", "写道", "发明", "研究",
+    "毕业", "就读", "父亲", "母亲", "同事", "导师", "数学家",
+    "逻辑学家", "科学家", "教授",
+)
+LOCATION_CONTEXT_HINTS = ("位于", "来到", "前往", "抵达", "迁往", "来自", "出生于", "生于")
+ORGANIZATION_CONTEXT_HINTS = ("任职于", "加入", "就读于", "毕业于", "工作于", "服务于", "属于")
+GENERIC_ORG_NAMES = {"实验室", "研究院", "研究所", "学院", "大学", "学会", "协会", "政府"}
+
+
+def collect_context_windows(text: str, name: str, window: int = 16, limit: int = 8):
+    if not text or not name:
+        return []
+    windows = []
+    start = 0
+    while len(windows) < limit:
+        idx = text.find(name, start)
+        if idx == -1:
+            break
+        left = max(0, idx - window)
+        right = min(len(text), idx + len(name) + window)
+        windows.append(text[left:right])
+        start = idx + len(name)
+    return windows
+
+
+def score_by_name_shape(name: str):
+    scores = Counter()
+    if name.startswith("《") and name.endswith("》"):
+        scores["Book"] += 8
+    if any(name.endswith(suffix) for suffix in ORG_SUFFIXES):
+        scores["Organization"] += 5
+    if any(name.endswith(suffix) for suffix in LOC_SUFFIXES):
+        scores["Location"] += 4
+    if any(hint in name for hint in EVENT_HINTS):
+        scores["Event"] += 5
+    if any(hint in name for hint in MACHINE_HINTS):
+        scores["Machine"] += 5
+    if any(hint in name for hint in CONCEPT_HINTS):
+        scores["Concept"] += 4
+    if "·" in name:
+        scores["Person"] += 6
+    if re.fullmatch(r"[A-Za-z][A-Za-z.\s-]{2,}", name):
+        scores["Person"] += 4
+    if re.fullmatch(r"[\u4e00-\u9fff]{2,4}", name):
+        scores["Person"] += 1
+    return scores
+
+
+def score_by_context(name: str, windows):
+    scores = Counter()
+    for window in windows:
+        if any(word in window for word in PERSON_CONTEXT_HINTS):
+            scores["Person"] += 1
+        if any(word in window for word in LOCATION_CONTEXT_HINTS):
+            scores["Location"] += 1
+        if any(word in window for word in ORGANIZATION_CONTEXT_HINTS):
+            scores["Organization"] += 1
+        if any(word in window for word in EVENT_HINTS):
+            scores["Event"] += 1
+        if any(word in window for word in MACHINE_HINTS):
+            scores["Machine"] += 1
+        if any(word in window for word in CONCEPT_HINTS):
+            scores["Concept"] += 1
+        if "《" in window and "》" in window:
+            scores["Book"] += 1
+        if re.search(r"(与|和|及|、)" + re.escape(name) + r"(、|和|及|一同)", window):
+            scores["Person"] += 1
+    return scores
+
+
+def choose_final_type(name: str, vote_counter: Counter, text: str):
+    combined = Counter()
+    combined.update(vote_counter)
+    combined.update(score_by_name_shape(name))
+    windows = collect_context_windows(text, name)
+    combined.update(score_by_context(name, windows))
+    final_type = choose_type(combined)
+    final_type = calibrate_entity_type(name, final_type) if final_type else ""
+    return final_type, windows
+
+
+def looks_like_person_fragment(name: str, sources: set, votes: int, windows):
+    if "·" in name or " " in name or re.search(r"[A-Za-z]", name):
+        return False
+    if len(name) <= 1:
+        return True
+    if len(name) == 2 and votes <= 6:
+        return True
+    if len(name) == 3 and sources == {"spacy"} and votes <= 3:
+        context = "".join(windows)
+        if not any(word in context for word in PERSON_CONTEXT_HINTS):
+            return True
+    return False
+
+
+def looks_like_generic_org(name: str, sources: set, votes: int):
+    if sources != {"spacy"} or votes > 3:
+        return False
+    if name in GENERIC_ORG_NAMES:
+        return True
+    return name.startswith("国家") and name.endswith(("实验室", "研究院", "研究所")) and len(name) <= 5
+
+
+def low_support_ambiguous_location(name: str, sources: set, votes: int, windows):
+    if any(name.endswith(suffix) for suffix in LOC_SUFFIXES):
+        return False
+    if len(name) > 3 or votes > 3 or sources != {"spacy"}:
+        return False
+    context = "".join(windows)
+    return not any(word in context for word in LOCATION_CONTEXT_HINTS)
+
+
+def drop_prefix_fragments(entities):
+    kept = []
+    for entity in sorted(entities, key=lambda x: (-len(x[0]), -x[3], x[0])):
+        name, typ, _, votes, _ = entity
+        is_fragment = False
+        for kept_entity in kept:
+            kept_name, kept_type, _, kept_votes, _ = kept_entity
+            if typ != kept_type:
+                continue
+            if len(name) < 3 or len(kept_name) - len(name) > 4:
+                continue
+            if kept_votes < votes:
+                continue
+            if kept_name.startswith(name):
+                is_fragment = True
+                break
+        if not is_fragment:
+            kept.append(entity)
+    return kept
 
 def char_features(chars, i):
     ch = chars[i]
@@ -294,17 +437,11 @@ def extract_and_save_entities():
     # 组装结果
     final_entities = []
     for name, c in merged_votes.items():
-        final_type = choose_type(c)
+        final_type, windows = choose_final_type(name, c, text)
         if not final_type:
             continue
         total_votes = sum(c.values())
-        calibrated = calibrate_entity_type(name, final_type)
-        if calibrated != final_type:
-            rel_votes = max(c.get(calibrated, 0), c.get(final_type, 0))
-            final_type = calibrated
-            confidence = round(rel_votes / total_votes, 3) if total_votes else 0.0
-        else:
-            confidence = round(c[final_type] / total_votes, 3) if total_votes else 0.0
+        confidence = round(c.get(final_type, max(c.values())) / total_votes, 3) if total_votes else 0.0
         if should_drop_by_blocklist(name, final_type):
             continue
         if final_type == "Concept" and looks_like_sentence_fragment(name):
@@ -323,6 +460,17 @@ def extract_and_save_entities():
         model_sources = {"spacy", "crf"}
         has_model = bool(src_set & model_sources)
         rule_only = src_set == {"rule"}
+        if final_type == "Person" and looks_like_person_fragment(name, src_set, total_votes, windows):
+            continue
+        if final_type == "Organization" and looks_like_generic_org(name, src_set, total_votes):
+            continue
+        if final_type == "Location" and low_support_ambiguous_location(name, src_set, total_votes, windows):
+            continue
+        if final_type == "Person" and src_set == {"crf"} and "·" in name and len(name) <= 4:
+            continue
+        if final_type == "Location" and src_set == {"crf"} and len(name) == 3 and name.endswith("国"):
+            if name[:-1] in merged_votes:
+                continue
         # 仅 CRF 的长串 Concept 误分多，略收紧
         if final_type == "Concept" and src_set == {"crf"} and len(name) > 6:
             if confidence < 0.95:
@@ -356,6 +504,7 @@ def extract_and_save_entities():
             )
         )
 
+    final_entities = drop_prefix_fragments(final_entities)
     final_entities.sort(key=lambda x: (x[1], x[0]))
 
     # 自动结果：前两列供下游关系抽取；后列为自检/评估用
