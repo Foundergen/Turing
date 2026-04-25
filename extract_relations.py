@@ -146,8 +146,6 @@ STRICT_BETWEEN_RELATIONS = {
     "迫害",
 }
 
-ENABLE_SEED_EXPANSION = False
-
 NEGATION_CUES = ("不", "没有", "未", "无", "并非", "不是", "谢绝")
 PASSIVE_CUES = ("被", "遭到", "由")
 
@@ -362,27 +360,6 @@ def resolve_entity_type(name: str, entity_type_map: dict, alias_map: dict) -> st
         return direct
     canonical = alias_map.get(name, name)
     return entity_type_map.get(canonical, "")
-
-
-def choose_relation(sentence: str, relation_rules: dict):
-    """
-    返回 (关系名, 触发词数, 触发词列表)
-    """
-    relation_scores = {}
-    evidence = {}
-    for trigger_word, rel_name in relation_rules.items():
-        if trigger_word in sentence:
-            relation_scores[rel_name] = relation_scores.get(rel_name, 0) + 1
-            evidence.setdefault(rel_name, []).append(trigger_word)
-
-    if not relation_scores:
-        return "", 0, []
-
-    best_rel = sorted(
-        relation_scores.items(),
-        key=lambda x: (-x[1], x[0]),
-    )[0][0]
-    return best_rel, relation_scores[best_rel], evidence.get(best_rel, [])
 
 
 def canonicalize_relation_label(relation: str) -> str:
@@ -648,20 +625,6 @@ def orient_by_relation(head: str, tail: str, relation: str, head_type: str, tail
         if head_type == "Location" and tail_type in {"Organization", "Machine"}:
             return tail, head, tail_type, head_type
     return head, tail, head_type, tail_type
-
-
-def should_keep_cooccur(head_type: str, tail_type: str, char_dist: int, local_context: str) -> bool:
-    hint_words = ["在", "于", "与", "和", "及", "由", "对", "向", "从", "为", "就读", "提出", "参与", "研究", "任职", "父亲", "母亲", "期间", "使用", "通过"]
-    if char_dist > 28:
-        return False
-    if char_dist > 18 and not any(w in local_context for w in hint_words):
-        return False
-    if head_type == tail_type == "Person":
-        person_hints = ["与", "和", "父亲", "母亲", "导师", "合作", "同事"]
-        return any(w in local_context for w in person_hints) and char_dist <= 20
-    if {head_type, tail_type} == {"Location"}:
-        return False
-    return True
 
 
 def collect_sentence_mentions(sentence: str, alias_map: dict, entity_type_map: dict):
@@ -943,31 +906,6 @@ def print_relation_catalog():
         triggers = grouped.get(rel)
         if triggers:
             print(f"  - {rel}: {'、'.join(triggers)}")
-
-
-def relation_ml_predict(sentence, e1, e2, model_path="relation_clf.model"):
-    """
-    可选传统分类器路径：若存在模型则作为规则补充。
-    期望模型具备 predict_proba([text]) 与 classes_。
-    """
-    if joblib is None:
-        return "", 0.0
-    try:
-        model = joblib.load(model_path)
-    except Exception:
-        return "", 0.0
-    feature_text = f"{e1} [SEP] {sentence} [SEP] {e2}"
-    try:
-        probs = model.predict_proba([feature_text])[0]
-        classes = list(model.classes_)
-        best_idx = max(range(len(probs)), key=lambda i: probs[i])
-        best_rel = classes[best_idx]
-        best_prob = float(probs[best_idx])
-        if best_rel == "无关系":
-            return "", best_prob
-        return best_rel, best_prob
-    except Exception:
-        return "", 0.0
 
 
 def load_relation_models(bin_model_path="relation_bin_clf.model", multi_model_path="relation_multi_clf.model"):
@@ -1252,7 +1190,7 @@ def aggregate_relation_evidence(triples, entity_type_map, alias_map=None):
     """
     alias_map = alias_map or {}
     grouped = defaultdict(list)
-    source_rank = {"auto_rule": 4, "auto_open_ie": 3, "auto_feature_ml": 2, "auto_ml": 2, "auto_seed_rule": 1, "auto_seed_ml": 1, "auto_cooccur": 0}
+    source_rank = {"auto_rule": 4, "auto_open_ie": 3, "auto_feature_ml": 2, "auto_ml": 2, "auto_cooccur": 0}
     for row in triples:
         calibrated, feature_notes = feature_calibrated_confidence(row, entity_type_map, alias_map)
         if calibrated <= 0:
@@ -1283,159 +1221,6 @@ def aggregate_relation_evidence(triples, entity_type_map, alias_map=None):
             best[7] = "否"
         aggregated.append(best)
     return aggregated
-
-
-def collect_seed_heads(triples):
-    seed_heads = set()
-    for head, relation, tail, source, confidence, *_ in triples:
-        if source == "auto_rule" and confidence >= 0.78 and relation != "相关":
-            seed_heads.add(head)
-    return seed_heads
-
-
-def build_seed_triples(triples):
-    seeds = []
-    preferred_relations = {
-        "出生于", "就读于", "毕业于", "任职于", "提出", "研究", "撰写", "发表", "证明",
-        "获得", "设计", "改进", "开发", "聘请", "迫害", "誉为", "当选院士", "参与破解",
-        "合作", "父亲", "母亲",
-    }
-    for row in triples:
-        head, relation, tail, source, confidence = row[:5]
-        if source != "auto_rule" or relation == "相关" or relation not in preferred_relations:
-            continue
-        if confidence >= 0.84:
-            seeds.append(row)
-    return seeds
-
-
-def seed_guided_ml_expansion(sentences, entities, alias_map, entity_type_map, bin_model, multi_model, seed_heads):
-    expanded = []
-    explicit_relations = {
-        "出生于", "就读于", "毕业于", "任职于", "师从", "合作", "父亲", "母亲", "参与",
-        "参与破解", "提出", "研究", "撰写", "发表", "证明", "获得", "设计", "改进",
-        "开发", "聘请", "迫害", "誉为", "当选院士",
-    }
-    for sentence in sentences:
-        sentence = sentence.strip()
-        if not sentence or sentence.startswith("==="):
-            continue
-        found_entities = [ent for ent in entities if ent in sentence]
-        if len(found_entities) < 2:
-            continue
-        for entity1, entity2 in itertools.combinations(found_entities, 2):
-            char_dist = min_char_distance(sentence, entity1, entity2)
-            entity1_type = resolve_entity_type(entity1, entity_type_map, alias_map)
-            entity2_type = resolve_entity_type(entity2, entity_type_map, alias_map)
-            if not pair_type_is_plausible(entity1_type, entity2_type):
-                continue
-            if char_dist > max_distance_for_pair(entity1_type, entity2_type):
-                continue
-
-            ml_relation_12, ml_prob_12 = relation_ml_predict_with_model(bin_model, multi_model, sentence, entity1, entity2, entity_type_map, alias_map)
-            ml_relation_21, ml_prob_21 = relation_ml_predict_with_model(bin_model, multi_model, sentence, entity2, entity1, entity_type_map, alias_map)
-            if ml_prob_21 > ml_prob_12:
-                relation, confidence, swapped = canonicalize_relation_label(ml_relation_21), ml_prob_21, True
-            else:
-                relation, confidence, swapped = canonicalize_relation_label(ml_relation_12), ml_prob_12, False
-
-            if relation not in explicit_relations or confidence < 0.37:
-                continue
-
-            head = apply_alias(entity2, alias_map) if swapped else apply_alias(entity1, alias_map)
-            tail = apply_alias(entity1, alias_map) if swapped else apply_alias(entity2, alias_map)
-            head_type = entity_type_map.get(head, "")
-            tail_type = entity_type_map.get(tail, "")
-            head, tail, head_type, tail_type = orient_by_relation(head, tail, relation, head_type, tail_type)
-            if head == tail:
-                continue
-            if head not in seed_heads and tail not in seed_heads:
-                continue
-            if relation == "就读于" and any(hint in sentence for hint in ("客座教授", "奖学金", "Fellow")):
-                continue
-            if relation == "合作" and char_dist > 20 and "一起" not in sentence:
-                continue
-            if not relation_type_allowed(relation, head_type, tail_type):
-                continue
-
-            expanded.append([head, relation, tail, "auto_seed_ml", round(confidence, 3), "(Seed-ML)", sentence, "是" if confidence < 0.5 else "否"])
-    return expanded
-
-
-def seed_guided_rule_expansion(sentences, alias_map, entity_type_map, seed_triples):
-    expanded = []
-    seed_heads = {row[0] for row in seed_triples}
-    seed_relations = {row[1] for row in seed_triples}
-    generic_machine_names = {"机器", "密码机", "计算机"}
-    for sentence in sentences:
-        sentence = sentence.strip()
-        if not sentence or sentence.startswith("==="):
-            continue
-        mentions = collect_sentence_mentions(sentence, alias_map, entity_type_map)
-        mention_names = {m["canonical"] for m in mentions}
-        if not (mention_names & seed_heads):
-            continue
-        for head, relation, tail, *_ in seed_triples:
-            if head not in mention_names:
-                continue
-            local_expanded = []
-            if relation == "提出":
-                for mention in mentions:
-                    if mention["type"] in {"Concept", "Machine"} and mention["canonical"] != head:
-                        head_mention = next((m for m in mentions if m["canonical"] == head), None)
-                        if not head_mention:
-                            continue
-                        left = min(head_mention["end"], mention["end"])
-                        right = max(head_mention["start"], mention["start"])
-                        between = sentence[left:right]
-                        mention_prefix = sentence[max(0, mention["start"] - 8):mention["start"]]
-                        has_define_pattern = any(trigger in mention_prefix for trigger in ("叫做", "称为", "定义为"))
-                        has_between_trigger = any(trigger in between for trigger in ("提出", "发明", "设计", "定义"))
-                        if not (has_define_pattern or has_between_trigger):
-                            continue
-                        if "被称为" in sentence[max(0, mention["start"] - 12):mention["end"] + 12]:
-                            continue
-                        if any(trigger in sentence for trigger in ("负责", "研究工作", "继续作", "继续做", "应用了")):
-                            continue
-                        local_expanded.append([head, "提出", mention["canonical"], "auto_seed_rule", 0.74, "种子扩展:提出", sentence, "是"])
-            elif relation == "任职于":
-                for mention in mentions:
-                    if mention["type"] == "Organization" and mention["canonical"] != head:
-                        if mention["canonical"].endswith("海军") and "密码分析" in sentence and f"在{mention['alias']}" not in sentence and f"于{mention['alias']}" not in sentence:
-                            continue
-                        if not any(trigger in sentence for trigger in ("负责", "任职", "工作", "副主任", "招聘", "加入")):
-                            continue
-                        if not any(pattern in sentence for pattern in (f"在{mention['alias']}", f"于{mention['alias']}", f"{mention['alias']}的副主任", f"加入{mention['alias']}")):
-                            continue
-                        local_expanded.append([head, "任职于", mention["canonical"], "auto_seed_rule", 0.72, "种子扩展:任职", sentence, "是"])
-            elif relation == "毕业于":
-                for mention in mentions:
-                    if mention["type"] == "Organization" and mention["canonical"] != head:
-                        if any(trigger in sentence for trigger in ("毕业", "获博士学位")):
-                            local_expanded.append([head, "毕业于", mention["canonical"], "auto_seed_rule", 0.74, "种子扩展:毕业", sentence, "是"])
-            elif relation == "当选院士":
-                for mention in mentions:
-                    if mention["type"] == "Organization" and mention["canonical"] != head:
-                        if any(trigger in sentence for trigger in ("院士", "会士", "FRS", "成员", "被选为", "当选")):
-                            local_expanded.append([head, "当选院士", mention["canonical"], "auto_seed_rule", 0.72, "种子扩展:院士", sentence, "是"])
-            elif relation == "参与破解":
-                for mention in mentions:
-                    if mention["type"] == "Machine" and mention["canonical"] != head:
-                        if mention["canonical"] in generic_machine_names:
-                            continue
-                        if any(trigger in sentence for trigger in ("破解", "破译", "解密", "密码分析")):
-                            local_expanded.append([head, "参与破解", mention["canonical"], "auto_seed_rule", 0.72, "种子扩展:破解", sentence, "是"])
-            elif relation == "研究":
-                for mention in mentions:
-                    if mention["type"] in {"Concept", "Machine"} and mention["canonical"] != head:
-                        if mention["canonical"] in generic_machine_names:
-                            continue
-                        if any(trigger in sentence for trigger in ("研究", "研究工作", "继续作", "继续做")):
-                            local_expanded.append([head, "研究", mention["canonical"], "auto_seed_rule", 0.72, "种子扩展:研究", sentence, "是"])
-            for row in local_expanded:
-                if row[1] in seed_relations:
-                    expanded.append(row)
-    return expanded
 
 
 def extract_triples():
@@ -1625,20 +1410,10 @@ def extract_triples():
                 triples.append(row)
                 relation_stats[source] += 1
 
-    seed_triples = build_seed_triples(triples)
-    seed_heads = collect_seed_heads(seed_triples)
-    if ENABLE_SEED_EXPANSION and seed_heads:
-        seed_rule_expanded = seed_guided_rule_expansion(sentences, alias_map, entity_type_map, seed_triples)
-        triples.extend(seed_rule_expanded)
-        relation_stats["auto_seed_rule"] += len(seed_rule_expanded)
-        seed_expanded = seed_guided_ml_expansion(sentences, entities, alias_map, entity_type_map, bin_model, multi_model, seed_heads)
-        triples.extend(seed_expanded)
-        relation_stats["auto_seed_ml"] += len(seed_expanded)
-
     # 6. 去重并保存三元组
     triples = aggregate_relation_evidence(triples, entity_type_map, alias_map)
     best_triples = {}
-    source_rank = {"auto_rule": 5, "auto_open_ie": 4, "auto_feature_ml": 3, "auto_ml": 3, "auto_seed_rule": 2, "auto_seed_ml": 2, "auto_cooccur": 1}
+    source_rank = {"auto_rule": 5, "auto_open_ie": 4, "auto_feature_ml": 3, "auto_ml": 3, "auto_cooccur": 1}
     for t in triples:
         key = (t[0], t[1], t[2])
         if t[1] in {"就读于", "毕业于"} and not any(token in t[2] for token in ("大学", "学院", "学校")):
@@ -1649,15 +1424,9 @@ def extract_triples():
             continue
         if t[1] in {"父亲", "母亲"} and (t[4] < 0.8 or not str(t[5]).startswith("模板:")):
             continue
-        if t[1] == "任职于" and t[3] == "auto_seed_rule" and any(hint in t[6] for hint in ("学习", "客座教授", "奖学金", "Fellow")):
-            continue
         if t[3] == "auto_cooccur" and t[4] < 0.29:
             continue
         if t[3] in {"auto_ml", "auto_feature_ml"} and t[4] < 0.50:
-            continue
-        if t[3] == "auto_seed_rule" and t[4] < 0.70:
-            continue
-        if t[3] == "auto_seed_ml" and t[4] < 0.50:
             continue
         prev = best_triples.get(key)
         if prev is None:
