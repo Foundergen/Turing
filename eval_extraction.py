@@ -32,6 +32,18 @@ def load_triple_audit(path="turing_triples_auto_audit.csv"):
     return rows
 
 
+def load_rows(path):
+    rows = []
+    p = Path(path)
+    if not p.exists():
+        return rows
+    with p.open("r", encoding="utf-8-sig") as f:
+        r = csv.DictReader(f)
+        for row in r:
+            rows.append(row)
+    return rows
+
+
 def corpus_hit_rate(names, corpus_path="turing_corpus_clean.txt"):
     text = Path(corpus_path).read_text(encoding="utf-8")
     hits = sum(1 for n in names if n and n in text)
@@ -46,6 +58,8 @@ def eval_entities(rows):
     model_src = 0
     high_certainty = 0  # 与旧「建议复核=否」同判据：置信≥0.68 且含 spaCy/CRF
     book_only_rule = 0
+    by_type = {}
+    by_subtype = {}
     for row in rows:
         src = row.get("来源", "")
         try:
@@ -61,6 +75,11 @@ def eval_entities(rows):
             high_certainty += 1
         if src.strip() == "rule" and row.get("实体类型", "") == "Book":
             book_only_rule += 1
+        typ = row.get("实体类型", "unknown")
+        subtype = row.get("实体子类型", "")
+        by_type[typ] = by_type.get(typ, 0) + 1
+        if subtype:
+            by_subtype[subtype] = by_subtype.get(subtype, 0) + 1
 
     n = len(rows)
     return {
@@ -70,6 +89,8 @@ def eval_entities(rows):
         "含模型来源占比": round(model_src / n, 4),
         "高确定占比_置信且含模型": round(high_certainty / n, 4),
         "纯规则书名条数": book_only_rule,
+        "按主类型计数": dict(sorted(by_type.items())),
+        "按子类型计数": dict(sorted(by_subtype.items())),
         "语料字面命中率": None,
     }
 
@@ -105,6 +126,49 @@ def eval_triples(rows):
     }
 
 
+def eval_events(rows):
+    if not rows:
+        return {}
+    confs = []
+    no_review = 0
+    with_time = 0
+    with_object = 0
+    with_location = 0
+    with_cause_or_result = 0
+    by_type = {}
+    by_source = {}
+    for row in rows:
+        try:
+            c = float(row.get("confidence", "0") or 0)
+        except ValueError:
+            c = 0.0
+        confs.append(c)
+        if row.get("review_flag", "").strip() == "否":
+            no_review += 1
+        if row.get("time", "").strip():
+            with_time += 1
+        if row.get("object", "").strip():
+            with_object += 1
+        if row.get("location", "").strip():
+            with_location += 1
+        if row.get("cause", "").strip() or row.get("result", "").strip():
+            with_cause_or_result += 1
+        by_type[row.get("event_type", "unknown")] = by_type.get(row.get("event_type", "unknown"), 0) + 1
+        by_source[row.get("source", "unknown")] = by_source.get(row.get("source", "unknown"), 0) + 1
+    n = len(rows)
+    return {
+        "条数": n,
+        "平均置信度": round(statistics.mean(confs), 4) if confs else 0.0,
+        "免检占比_建议复核为否": round(no_review / n, 4),
+        "含时间占比": round(with_time / n, 4),
+        "含客体占比": round(with_object / n, 4),
+        "含地点机构占比": round(with_location / n, 4),
+        "含原因或结果占比": round(with_cause_or_result / n, 4),
+        "按事件类型计数": dict(sorted(by_type.items())),
+        "按来源计数": dict(sorted(by_source.items())),
+    }
+
+
 def composite_entity_score(m):
     if not m or m.get("条数", 0) == 0:
         return 0.0
@@ -129,9 +193,28 @@ def composite_triple_score(m):
     return round(100 * (0.4 * conf + 0.35 * spec + 0.25 * rev), 2)
 
 
+def composite_event_score(m):
+    if not m or m.get("条数", 0) == 0:
+        return 0.0
+    return round(
+        100
+        * (
+            0.35 * m["平均置信度"]
+            + 0.25 * m["免检占比_建议复核为否"]
+            + 0.15 * m["含时间占比"]
+            + 0.15 * m["含客体占比"]
+            + 0.10 * m["含地点机构占比"]
+        ),
+        2,
+    )
+
+
 def main():
     ent_rows = load_entity_rows()
     tri_rows = load_triple_audit()
+    tri_core_rows = load_rows("turing_triples_core.csv")
+    event_rows = load_rows("turing_events_auto_audit.csv")
+    event_core_rows = load_rows("turing_events_core.csv")
 
     em = eval_entities(ent_rows)
     if ent_rows:
@@ -139,6 +222,8 @@ def main():
         em["语料字面命中率"] = round(corpus_hit_rate(names), 4)
 
     tm = eval_triples(tri_rows)
+    evm = eval_events(event_rows)
+    evcm = eval_events(event_core_rows)
 
     print("=== 实体（core_entities_auto.csv）===")
     for k, v in em.items():
@@ -152,6 +237,23 @@ def main():
         print(f"  {k}: {v}")
     print(f"  综合可靠度指数(0-100): {composite_triple_score(tm)}")
     print("  （说明：由置信度、具体关系占比、免检比例加权）")
+    if tri_rows:
+        print(f"  核心版占审核版比例: {round(len(tri_core_rows) / len(tri_rows), 4)}")
+
+    print()
+    print("=== 事件审核版（turing_events_auto_audit.csv）===")
+    for k, v in evm.items():
+        print(f"  {k}: {v}")
+    print(f"  综合可靠度指数(0-100): {composite_event_score(evm)}")
+    print("  （说明：由置信度、免检比例、时间/客体/地点完整度加权）")
+
+    print()
+    print("=== 事件核心版（turing_events_core.csv）===")
+    for k, v in evcm.items():
+        print(f"  {k}: {v}")
+    print(f"  综合可靠度指数(0-100): {composite_event_score(evcm)}")
+    if event_rows:
+        print(f"  核心版占审核版比例: {round(len(event_core_rows) / len(event_rows), 4)}")
 
 
 if __name__ == "__main__":
