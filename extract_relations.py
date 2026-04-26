@@ -148,6 +148,7 @@ STRICT_BETWEEN_RELATIONS = {
 
 NEGATION_CUES = ("不", "没有", "未", "无", "并非", "不是", "谢绝")
 PASSIVE_CUES = ("被", "遭到", "由")
+ENTITY_SUBTYPE_MAP = {}
 
 OPEN_PREDICATE_RELATION_PATTERNS = [
     ("出生于", (r"(?:出生|生于|生下)",), {("Person", "Location")}),
@@ -176,6 +177,35 @@ OPEN_PREDICATE_RELATION_PATTERNS = [
 
 def normalize_text(text: str) -> str:
     return re.sub(r"\s+", " ", text.strip())
+
+
+def has_negated_trigger(sentence: str, relation: str, trigger_text: str = "") -> bool:
+    triggers = [
+        token for token in re.split(r"[|:：]", str(trigger_text))
+        if token and not token.startswith(("模板", "特征", "绑定", "开放谓词", "多证据"))
+    ]
+    triggers.extend(
+        token for token, rel in RELATION_TRIGGER_RULES.items()
+        if rel == relation and token in sentence
+    )
+    for trigger in sorted(set(triggers), key=len, reverse=True):
+        pos = sentence.find(trigger)
+        if pos < 0:
+            continue
+        local_before = sentence[max(0, pos - 10):pos]
+        local_after = sentence[pos:pos + len(trigger) + 8]
+        if relation == "证明" and "没有答案" in local_after:
+            continue
+        if any(cue in local_before for cue in NEGATION_CUES):
+            return True
+        patterns = (
+            rf"(?:并非|并不是|不是|没有|未|尚未|未能).{{0,8}}{re.escape(trigger)}",
+            rf"不是由.{{0,12}}{re.escape(trigger)}",
+            rf"并非由.{{0,12}}{re.escape(trigger)}",
+        )
+        if any(re.search(pattern, sentence) for pattern in patterns):
+            return True
+    return False
 
 
 def load_domain_aliases(path: str = "domain_aliases.csv") -> dict:
@@ -971,13 +1001,64 @@ def relation_ml_predict_with_model(bin_model, multi_model, sentence, e1, e2, ent
 
 def load_entity_type_map(path="core_entities.csv"):
     entity_types = {}
-    with open(path, "r", encoding="utf-8-sig") as f:
-        reader = csv.reader(f)
-        next(reader, None)
-        for row in reader:
-            if len(row) >= 2:
-                entity_types[row[0].strip()] = row[1].strip()
+    with open(path, "r", encoding="utf-8-sig", newline="") as f:
+        reader = csv.DictReader(f)
+        if reader.fieldnames and "实体名称" in reader.fieldnames:
+            for row in reader:
+                name = row.get("实体名称", "").strip()
+                typ = row.get("实体类型", "").strip()
+                if name and typ:
+                    entity_types[name] = typ
+        else:
+            f.seek(0)
+            raw_reader = csv.reader(f)
+            next(raw_reader, None)
+            for row in raw_reader:
+                if len(row) >= 2:
+                    entity_types[row[0].strip()] = row[1].strip()
     return entity_types
+
+
+def load_entity_subtype_map(path="core_entities_auto.csv"):
+    subtypes = {}
+    try:
+        with open(path, "r", encoding="utf-8-sig", newline="") as f:
+            reader = csv.DictReader(f)
+            for row in reader:
+                name = row.get("实体名称", "").strip()
+                subtype = row.get("实体子类型", "").strip()
+                if name and subtype:
+                    subtypes[name] = subtype
+    except FileNotFoundError:
+        pass
+    return subtypes
+
+
+def subtype_of(name: str) -> str:
+    return ENTITY_SUBTYPE_MAP.get(name, "")
+
+
+def relation_subtype_allowed(head: str, relation: str, tail: str) -> bool:
+    """在主类型合法之后，用实体子类型进一步约束高风险关系。"""
+    head_subtype = subtype_of(head)
+    tail_subtype = subtype_of(tail)
+    if relation in {"就读于", "毕业于"}:
+        return tail_subtype in {"", "University", "ResearchInstitute"}
+    if relation in {"发表", "撰写"}:
+        return tail_subtype not in {"Law"}
+    if relation == "提出":
+        return tail_subtype in {"", "Theory", "Test", "Problem", "Concept", "Device", "Machine"}
+    if relation == "证明":
+        return tail_subtype in {"", "Theory", "Problem", "Concept"}
+    if relation == "参与破解":
+        return tail_subtype in {"", "CipherMachine", "Machine", "Device"}
+    if relation in {"设计", "改进", "开发"}:
+        return tail_subtype in {"", "CipherMachine", "Computer", "Device", "Machine", "Theory", "Concept"}
+    if relation == "迫害":
+        return head_subtype not in {"MediaOrganization", "University", "ResearchInstitute", "Association"}
+    if relation == "当选院士":
+        return tail_subtype in {"", "Association", "University", "ResearchInstitute"}
+    return True
 
 
 def relation_type_allowed(relation, head_type, tail_type):
@@ -1038,6 +1119,10 @@ def relation_context_contradicts(row, entity_type_map: dict) -> bool:
     if relation in {"发表", "发布"} and any(hint in sentence for hint in ("没有发表", "未发表", "尚未发表")):
         return True
     if relation == "证明" and any(hint in sentence for hint in ("事实证明", "这证明", "表明")):
+        return True
+    if has_negated_trigger(sentence, relation, trigger_text):
+        return True
+    if not relation_subtype_allowed(head, relation, tail):
         return True
 
     trigger_positions = [sentence.find(token) for token in RELATION_TRIGGER_RULES if RELATION_TRIGGER_RULES[token] == relation and token in sentence]
@@ -1224,6 +1309,7 @@ def aggregate_relation_evidence(triples, entity_type_map, alias_map=None):
 
 
 def extract_triples():
+    global ENTITY_SUBTYPE_MAP
     print("正在加载核心实体字典...")
     print_relation_catalog()
     # 1. 读取实体词典
@@ -1237,6 +1323,7 @@ def extract_triples():
                 
     print(f"成功加载 {len(entities)} 个核心实体。")
     entity_type_map = load_entity_type_map("core_entities_auto.csv")
+    ENTITY_SUBTYPE_MAP = load_entity_subtype_map("core_entities_auto.csv")
     alias_map = build_dynamic_alias_map(entity_type_map)
     # 外部别名词典里的简称不在实体表里时也要能命中，否则共现会偏少。
     for short in alias_map:
