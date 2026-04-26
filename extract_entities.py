@@ -144,6 +144,70 @@ def should_drop_by_blocklist(name: str, typ: str) -> bool:
     blocked = ENTITY_BLOCKLIST_BY_TYPE.get(typ)
     return bool(blocked and name in blocked)
 
+def infer_entity_subtype(name: str, typ: str) -> str:
+    """在不改变主类型的前提下，给实体补充轻量子类型。"""
+    if typ == "Organization":
+        if any(token in name for token in ("大学", "学院", "学校")):
+            return "University"
+        if any(token in name for token in ("实验室", "研究所", "研究院", "中央研究院")):
+            return "ResearchInstitute"
+        if any(token in name for token in ("政府", "司法部", "国会", "上议院", "警方")):
+            return "GovernmentAgency"
+        if any(token in name for token in ("海军", "军情", "密码学校", "密码破译", "GC&CS", "GCHQ")):
+            return "MilitaryAgency"
+        if any(token in name for token in ("报", "杂志", "出版社", "电视台")):
+            return "MediaOrganization"
+        if any(token in name for token in ("协会", "学会", "俱乐部", "委员会")):
+            return "Association"
+        if "公司" in name:
+            return "Company"
+        return "Organization"
+    if typ == "Book":
+        if any(token in name for token in ("论文", "基础", "可计算数", "机器和智能")):
+            return "Paper"
+        if any(token in name for token in ("法", "保密法", "法案")):
+            return "Law"
+        if any(token in name for token in ("选集", "著作")):
+            return "Book"
+        return "Work"
+    if typ == "Concept":
+        if any(token in name for token in ("理论", "定理", "公式", "算法")):
+            return "Theory"
+        if "测试" in name:
+            return "Test"
+        if "问题" in name:
+            return "Problem"
+        if any(token in name for token in ("智能", "科学", "数学", "密码学")):
+            return "Discipline"
+        return "Concept"
+    if typ == "Machine":
+        if "密码机" in name:
+            return "CipherMachine"
+        if any(token in name for token in ("计算机", "电脑")):
+            return "Computer"
+        if any(token in name for token in ("引擎", "乘法器", "装置", "机器", "机")):
+            return "Device"
+        return "Machine"
+    if typ == "Event":
+        if any(token in name for token in ("战争", "战役")):
+            return "War"
+        if "运动会" in name or "奥运" in name:
+            return "SportsEvent"
+        if any(token in name for token in ("审判", "赦免", "法案")):
+            return "LegalEvent"
+        return "Event"
+    if typ == "Location":
+        if name.endswith("国") or name in {"英国", "美国", "德国", "法国", "印度", "波兰"}:
+            return "Country"
+        if name.endswith(("州", "郡", "市", "镇")):
+            return "AdministrativeRegion"
+        if any(token in name for token in ("庄园", "学院", "实验室")):
+            return "Place"
+        return "Location"
+    if typ == "Person":
+        return "Person"
+    return ""
+
 def calibrate_entity_type(name: str, typ: str) -> str:
     """用语形与后缀纠正常见类型漂移。"""
     if typ == "Person":
@@ -754,11 +818,11 @@ def looks_like_non_person_phrase(name: str, final_type: str, windows) -> bool:
 def drop_prefix_fragments(entities):
     kept = []
     country_prefixes = ("英国", "美国", "德国", "法国", "波兰", "印度")
-    for entity in sorted(entities, key=lambda x: (-len(x[0]), -x[3], x[0])):
-        name, typ, _, votes, _ = entity
+    for entity in sorted(entities, key=lambda x: (-len(x[0]), -x[4], x[0])):
+        name, typ, _, _, votes, _ = entity
         is_fragment = False
         for kept_entity in kept:
-            kept_name, kept_type, _, kept_votes, _ = kept_entity
+            kept_name, kept_type, _, _, kept_votes, _ = kept_entity
             if typ != kept_type:
                 continue
             if len(name) < 3 or len(kept_name) - len(name) > 4:
@@ -1098,6 +1162,7 @@ def extract_and_save_entities():
             (
                 name,
                 final_type,
+                infer_entity_subtype(name, final_type),
                 "+".join(sorted(merged_source[name].keys())),
                 total_votes,
                 confidence,
@@ -1110,7 +1175,7 @@ def extract_and_save_entities():
     # 自动结果：前两列供下游关系抽取；后列为自检/评估用
     with open("core_entities_auto.csv", "w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
-        writer.writerow(["实体名称", "实体类型", "来源", "投票数", "置信度"])
+        writer.writerow(["实体名称", "实体类型", "实体子类型", "来源", "投票数", "置信度"])
         writer.writerows(final_entities)
 
     print(f"提取完成：core_entities_auto.csv 共 {len(final_entities)} 条实体")
