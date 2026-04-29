@@ -1,0 +1,512 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>图灵知识图谱可视化</title>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --panel: #ffffff;
+      --text: #0f172a;
+      --muted: #64748b;
+      --line: #dbe3ef;
+      --accent: #2563eb;
+      --shadow: 0 12px 30px rgba(15, 23, 42, .08);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: "Microsoft YaHei", "PingFang SC", Arial, sans-serif;
+    }
+    header {
+      padding: 28px 40px 18px;
+      background: #ffffff;
+      border-bottom: 1px solid var(--line);
+    }
+    h1 { margin: 0 0 12px; font-size: 28px; font-weight: 700; }
+    h2 { margin: 0 0 14px; font-size: 20px; }
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(120px, 1fr));
+      gap: 12px;
+      max-width: 1180px;
+    }
+    .metric {
+      border: 1px solid var(--line);
+      background: #fbfdff;
+      border-radius: 8px;
+      padding: 12px 14px;
+    }
+    .metric strong { display: block; font-size: 24px; }
+    .metric span { color: var(--muted); font-size: 13px; }
+    main {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 22px 22px 40px;
+    }
+    section {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      margin-bottom: 18px;
+      padding: 18px;
+    }
+    .toolbar {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+    select, input {
+      height: 34px;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 0 10px;
+      background: #ffffff;
+      color: var(--text);
+    }
+    button {
+      height: 34px;
+      border: 1px solid #bfdbfe;
+      border-radius: 6px;
+      background: #eff6ff;
+      color: #1d4ed8;
+      cursor: pointer;
+    }
+    #graph {
+      width: 100%;
+      height: 620px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+      overflow: hidden;
+    }
+    .legend { display: flex; flex-wrap: wrap; gap: 10px; color: var(--muted); font-size: 13px; }
+    .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    .timeline {
+      position: relative;
+      padding-left: 18px;
+      border-left: 3px solid #dbeafe;
+    }
+    .search-box {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+    .search-box input {
+      width: 100%;
+      height: 38px;
+    }
+    .search-results {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+    .result-group {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfdff;
+      overflow: hidden;
+    }
+    .result-group h3 {
+      margin: 0;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+      font-size: 15px;
+    }
+    .result-list {
+      max-height: 280px;
+      overflow: auto;
+    }
+    .result-item {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e2e8f0;
+      line-height: 1.55;
+      font-size: 13px;
+    }
+    .result-item:last-child { border-bottom: 0; }
+    .result-title { font-weight: 700; }
+    .result-meta { color: var(--muted); margin-top: 3px; }
+    .event {
+      position: relative;
+      padding: 0 0 16px 18px;
+    }
+    .event::before {
+      content: "";
+      position: absolute;
+      left: -28px;
+      top: 4px;
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: var(--event-color);
+      border: 3px solid #ffffff;
+      box-shadow: 0 0 0 1px var(--line);
+    }
+    .event-title { font-weight: 700; }
+    .event-meta { color: var(--muted); font-size: 13px; margin: 4px 0; }
+    .event-sentence { line-height: 1.7; }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+    .bar-row {
+      display: grid;
+      grid-template-columns: 110px 1fr 42px;
+      gap: 10px;
+      align-items: center;
+      margin: 8px 0;
+      font-size: 13px;
+    }
+    .bar-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .bar-track { height: 10px; background: #e2e8f0; border-radius: 99px; overflow: hidden; }
+    .bar-fill { height: 100%; background: var(--accent); }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+    th, td {
+      border-bottom: 1px solid #e2e8f0;
+      padding: 9px 8px;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: #f8fafc; position: sticky; top: 0; }
+    .table-wrap { max-height: 420px; overflow: auto; border: 1px solid var(--line); border-radius: 8px; }
+    .muted { color: var(--muted); }
+    .tip {
+      position: fixed;
+      display: none;
+      max-width: 360px;
+      padding: 10px 12px;
+      background: rgba(15, 23, 42, .94);
+      color: #ffffff;
+      border-radius: 6px;
+      font-size: 13px;
+      pointer-events: none;
+      z-index: 10;
+      line-height: 1.5;
+    }
+    @media (max-width: 820px) {
+      header { padding: 22px 18px; }
+      .summary, .stats-grid, .search-results { grid-template-columns: 1fr; }
+      .search-box { grid-template-columns: 1fr; }
+      main { padding: 16px; }
+      #graph { height: 520px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>图灵知识图谱可视化</h1>
+    <div class="summary" id="summary"></div>
+  </header>
+  <main>
+    <section>
+      <h2>知识搜索</h2>
+      <div class="search-box">
+        <input id="kgSearchInput" type="search" placeholder="输入实体、关系、事件类型、年份或证据句关键词，例如：图灵测试、迫害、1939">
+        <button id="kgSearchButton">搜索</button>
+      </div>
+      <div class="search-results" id="kgSearchResults"></div>
+    </section>
+
+    <section>
+      <h2>实体关系网络图</h2>
+      <div class="toolbar">
+        <label>实体类型 <select id="typeFilter"><option value="">全部</option></select></label>
+        <label>关系类型 <select id="relationFilter"><option value="">全部</option></select></label>
+        <button id="resetGraph">重置视图</button>
+      </div>
+      <div class="legend" id="legend"></div>
+      <svg id="graph" role="img" aria-label="实体关系网络图"></svg>
+    </section>
+
+    <section>
+      <h2>核心事件时间线</h2>
+      <div class="toolbar">
+        <label>事件类型 <select id="eventFilter"><option value="">全部</option></select></label>
+      </div>
+      <div class="timeline" id="timeline"></div>
+    </section>
+
+    <section>
+      <h2>抽取结果统计</h2>
+      <div class="stats-grid" id="stats"></div>
+    </section>
+
+    <section>
+      <h2>核心三元组明细</h2>
+      <div class="table-wrap">
+        <table id="tripleTable"></table>
+      </div>
+    </section>
+  </main>
+  <div class="tip" id="tip"></div>
+  <script id="kgData" type="application/json">{"summary": {"entity_count": 74, "triple_count": 15, "event_count": 22, "event_time_pct": 72.7}, "entities": [{"实体名称": "《官方保密法》", "实体类型": "Book", "实体子类型": "Law", "来源": "rule", "投票数": "2", "置信度": "1.0"}, {"实体名称": "《形态发生的化学基础》", "实体类型": "Book", "实体子类型": "Paper", "来源": "rule", "投票数": "2", "置信度": "1.0"}, {"实体名称": "《模仿游戏》", "实体类型": "Book", "实体子类型": "Work", "来源": "crf+rule", "投票数": "5", "置信度": "1.0"}, {"实体名称": "《自然》", "实体类型": "Book", "实体子类型": "Work", "来源": "rule", "投票数": "2", "置信度": "1.0"}, {"实体名称": "《艾伦·图灵选集》", "实体类型": "Book", "实体子类型": "Book", "来源": "crf+rule", "投票数": "4", "置信度": "1.0"}, {"实体名称": "《解码纳粹秘密》", "实体类型": "Book", "实体子类型": "Work", "来源": "rule", "投票数": "2", "置信度": "1.0"}, {"实体名称": "《计算机器和智能》", "实体类型": "Book", "实体子类型": "Paper", "来源": "rule", "投票数": "2", "置信度": "1.0"}, {"实体名称": "《论可计算数及其在判定问题上的应用》", "实体类型": "Book", "实体子类型": "Paper", "来源": "rule", "投票数": "2", "置信度": "1.0"}, {"实体名称": "反应-扩散公式", "实体类型": "Concept", "实体子类型": "Theory", "来源": "rule_context", "投票数": "2", "置信度": "1.0"}, {"实体名称": "图灵测试", "实体类型": "Concept", "实体子类型": "Test", "来源": "rule+rule_context+rule_heading+rule_phrase", "投票数": "15", "置信度": "1.0"}, {"实体名称": "1948年奥林匹克运动会", "实体类型": "Event", "实体子类型": "SportsEvent", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "奥运会", "实体类型": "Event", "实体子类型": "SportsEvent", "来源": "spacy", "投票数": "6", "置信度": "1.0"}, {"实体名称": "第二次世界大战", "实体类型": "Event", "实体子类型": "Event", "来源": "spacy", "投票数": "9", "置信度": "1.0"}, {"实体名称": "伦敦", "实体类型": "Location", "实体子类型": "Location", "来源": "spacy", "投票数": "6", "置信度": "1.0"}, {"实体名称": "南安普顿", "实体类型": "Location", "实体子类型": "Location", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "印度", "实体类型": "Location", "实体子类型": "Country", "来源": "crf+spacy", "投票数": "16", "置信度": "1.0"}, {"实体名称": "吉尔福德", "实体类型": "Location", "实体子类型": "Location", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "多塞特郡", "实体类型": "Location", "实体子类型": "AdministrativeRegion", "来源": "rule_phrase+spacy", "投票数": "5", "置信度": "0.4"}, {"实体名称": "大西洋", "实体类型": "Location", "实体子类型": "Location", "来源": "rule_phrase+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "布莱切利庄园", "实体类型": "Location", "实体子类型": "Place", "来源": "rule_phrase", "投票数": "6", "置信度": "1.0"}, {"实体名称": "德国", "实体类型": "Location", "实体子类型": "Country", "来源": "crf+spacy", "投票数": "34", "置信度": "1.0"}, {"实体名称": "欧洲", "实体类型": "Location", "实体子类型": "Location", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "法国", "实体类型": "Location", "实体子类型": "Country", "来源": "crf+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "波兰", "实体类型": "Location", "实体子类型": "Country", "来源": "spacy", "投票数": "9", "置信度": "1.0"}, {"实体名称": "美国", "实体类型": "Location", "实体子类型": "Country", "来源": "crf", "投票数": "2", "置信度": "1.0"}, {"实体名称": "美国新墨西哥州", "实体类型": "Location", "实体子类型": "AdministrativeRegion", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "英国", "实体类型": "Location", "实体子类型": "Country", "来源": "crf+spacy", "投票数": "80", "置信度": "1.0"}, {"实体名称": "麦克纳利", "实体类型": "Location", "实体子类型": "Location", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "恩尼格玛密码机", "实体类型": "Machine", "实体子类型": "CipherMachine", "来源": "rule_context+rule_phrase+spacy", "投票数": "9", "置信度": "0.667"}, {"实体名称": "自动计算引擎", "实体类型": "Machine", "实体子类型": "Device", "来源": "rule_context+rule_phrase", "投票数": "4", "置信度": "1.0"}, {"实体名称": "GCHQ", "实体类型": "Organization", "实体子类型": "MilitaryAgency", "来源": "rule_phrase+spacy", "投票数": "9", "置信度": "0.667"}, {"实体名称": "NVIDIA", "实体类型": "Organization", "实体子类型": "Organization", "来源": "rule_phrase+spacy", "投票数": "10", "置信度": "1.0"}, {"实体名称": "上议院", "实体类型": "Organization", "实体子类型": "GovernmentAgency", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "中央研究院", "实体类型": "Organization", "实体子类型": "ResearchInstitute", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "剑桥", "实体类型": "Organization", "实体子类型": "Organization", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "剑桥大学", "实体类型": "Organization", "实体子类型": "University", "来源": "rule_phrase+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "剑桥大学国王学院", "实体类型": "Organization", "实体子类型": "University", "来源": "rule_context+rule_phrase", "投票数": "4", "置信度": "1.0"}, {"实体名称": "台大", "实体类型": "Organization", "实体子类型": "Organization", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "国家物理实验室", "实体类型": "Organization", "实体子类型": "ResearchInstitute", "来源": "rule_context+rule_phrase+spacy", "投票数": "7", "置信度": "1.0"}, {"实体名称": "德国海军", "实体类型": "Organization", "实体子类型": "MilitaryAgency", "来源": "rule_phrase+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "普林斯顿大学", "实体类型": "Organization", "实体子类型": "University", "来源": "rule_context+rule_phrase+spacy", "投票数": "7", "置信度": "1.0"}, {"实体名称": "曼彻斯特大学计算机实验室", "实体类型": "Organization", "实体子类型": "University", "来源": "rule_context+rule_phrase", "投票数": "4", "置信度": "1.0"}, {"实体名称": "每日电讯报", "实体类型": "Organization", "实体子类型": "MediaOrganization", "来源": "rule+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "皇家学会", "实体类型": "Organization", "实体子类型": "Association", "来源": "rule_phrase+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "美国国会", "实体类型": "Organization", "实体子类型": "GovernmentAgency", "来源": "rule_phrase+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "英国军情六处", "实体类型": "Organization", "实体子类型": "MilitaryAgency", "来源": "rule_context+rule_phrase", "投票数": "4", "置信度": "1.0"}, {"实体名称": "英国司法部", "实体类型": "Organization", "实体子类型": "GovernmentAgency", "来源": "rule_phrase+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "英国密码破译组织政府密码和密码学校", "实体类型": "Organization", "实体子类型": "University", "来源": "rule_context+rule_phrase", "投票数": "6", "置信度": "1.0"}, {"实体名称": "英国皇家海军", "实体类型": "Organization", "实体子类型": "MilitaryAgency", "来源": "rule_context+rule_phrase+spacy", "投票数": "7", "置信度": "1.0"}, {"实体名称": "苹果公司", "实体类型": "Organization", "实体子类型": "Company", "来源": "rule_phrase", "投票数": "4", "置信度": "1.0"}, {"实体名称": "计算机协会", "实体类型": "Organization", "实体子类型": "Association", "来源": "rule_context+rule_phrase+spacy", "投票数": "7", "置信度": "1.0"}, {"实体名称": "马尔伯勒学院", "实体类型": "Organization", "实体子类型": "University", "来源": "rule_phrase+spacy", "投票数": "5", "置信度": "1.0"}, {"实体名称": "Asa Briggs", "实体类型": "Person", "实体子类型": "Person", "来源": "rule_context", "投票数": "4", "置信度": "1.0"}, {"实体名称": "Ethel Sara Stoney", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "6", "置信度": "1.0"}, {"实体名称": "Jane Eliza", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "Julius", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "Ronald Lewin", "实体类型": "Person", "实体子类型": "Person", "来源": "rule_context+spacy", "投票数": "7", "置信度": "1.0"}, {"实体名称": "Sara Stoney", "实体类型": "Person", "实体子类型": "Person", "来源": "rule_context", "投票数": "4", "置信度": "1.0"}, {"实体名称": "冯·诺依曼", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "史蒂夫·乔布斯", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "史蒂芬·弗莱", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "哈里·欣斯利", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "圣迈克尔", "实体类型": "Person", "实体子类型": "Person", "来源": "rule_parenthetical+spacy", "投票数": "5", "置信度": "0.6"}, {"实体名称": "希尔顿", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "6", "置信度": "1.0"}, {"实体名称": "本尼迪克特·康伯巴奇", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "朱利斯·麦席森·图灵", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "档案馆", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "15", "置信度": "1.0"}, {"实体名称": "汤姆·理查兹", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "温·诺克斯", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "爱因斯坦", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "6", "置信度": "1.0"}, {"实体名称": "艾伦·图灵", "实体类型": "Person", "实体子类型": "Person", "来源": "crf+spacy", "投票数": "42", "置信度": "1.0"}, {"实体名称": "艾伦·图灵年", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "阿尔伯特·爱因斯坦", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}, {"实体名称": "阿隆佐·邱奇", "实体类型": "Person", "实体子类型": "Person", "来源": "spacy", "投票数": "3", "置信度": "1.0"}], "triples": [{"头实体": "艾伦·图灵", "关系": "研究", "尾实体": "图灵测试", "来源": "auto_rule", "置信度": "0.9", "触发词": "模板:研究|特征:触发词位于实体间|特征:距离偏远|特征:类型合法|多证据:3", "证据句": "图灵在对人工智能的研究中，提出了一个叫做图灵测试的实验，尝试定出一个决定机器是否有感觉的标准", "建议人工复核": "否"}, {"头实体": "英国政府", "关系": "迫害", "尾实体": "艾伦·图灵", "来源": "auto_open_ie", "置信度": "0.933", "触发词": "开放谓词:(?:迫害|处罚|起诉)|特征:类型合法|多证据:2", "证据句": "在2009年9月10日，一份超过3万人的请愿签名，使英国首相戈登·布朗在《每日电讯报》撰文，因为英国政府当年以同性恋相关罪名起诉图灵并定罪，让他自杀身亡，正式向艾伦·图灵公开道歉", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "父亲", "尾实体": "朱利斯·麦席森·图灵", "来源": "auto_rule", "置信度": "0.85", "触发词": "模板:父亲|特征:触发词位于实体间|特征:距离偏远|特征:类型合法", "证据句": "图灵的父亲朱利斯·麦席森·图灵（Julius Mathison Turing）是一名英属印度的公务员", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "母亲", "尾实体": "Ethel Sara Stoney", "来源": "auto_rule", "置信度": "0.885", "触发词": "模板:母亲|特征:触发词位于实体间|特征:距离偏远|特征:类型合法|多证据:2", "证据句": "1911年，图灵的母亲Ethel Sara Stoney在英属印度怀了孕", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "出生于", "尾实体": "伦敦", "来源": "auto_rule", "置信度": "0.872", "触发词": "模板:出生|特征:触发词位于实体间|特征:距离偏远|特征:类型合法", "证据句": "因为他们希望艾伦在英国出生，所以回到伦敦，住在帕丁顿，并在那里生下了艾伦", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "就读于", "尾实体": "剑桥大学国王学院", "来源": "auto_rule", "置信度": "0.872", "触发词": "模板:就读|特征:触发词位于实体间|特征:距离偏远|特征:类型合法", "证据句": "1931年，图灵考入剑桥大学国王学院攻读本科，并获得了数学一等荣誉", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "毕业于", "尾实体": "剑桥大学国王学院", "来源": "auto_rule", "置信度": "0.85", "触发词": "绑定:毕业于|特征:触发词位于实体间|特征:距离偏远|特征:类型合法", "证据句": "1934年他以优异成绩毕业", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "证明", "尾实体": "停机问题", "来源": "auto_rule", "置信度": "0.872", "触发词": "模板:证明|特征:触发词位于实体间|特征:距离偏远|特征:类型合法", "证据句": "他的证明首先展示了图灵机的停机问题没有答案，这是说不可能用一个算法来决定一台指定的图灵机是否会停机", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "参与破解", "尾实体": "恩尼格玛密码机", "来源": "auto_rule", "置信度": "0.865", "触发词": "模板:参与破解|特征:触发词位于实体间|特征:距离偏远|特征:类型合法|多证据:2", "证据句": "他与高级GC&amp;CS密码破译员第利温·诺克斯一起专注于对德国使用的恩尼格玛密码机进行密码分析", "建议人工复核": "否"}, {"头实体": "温·诺克斯", "关系": "参与破解", "尾实体": "恩尼格玛密码机", "来源": "auto_rule", "置信度": "1.0", "触发词": "模板:破解|特征:局部触发词|特征:近距离|特征:类型合法", "证据句": "他与高级GC&amp;CS密码破译员第利温·诺克斯一起专注于对德国使用的恩尼格玛密码机进行密码分析", "建议人工复核": "否"}, {"头实体": "英国皇家海军", "关系": "聘请", "尾实体": "艾伦·图灵", "来源": "auto_rule", "置信度": "0.872", "触发词": "模板:聘请|特征:触发词位于实体间|特征:距离偏远|特征:类型合法|特征:被动/受事提示", "证据句": "1939年图灵被英国皇家海军招聘，并在英国军情六处监督下从事对德国机密军事密码的破译工作", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "任职于", "尾实体": "国家物理实验室", "来源": "auto_rule", "置信度": "0.892", "触发词": "模板:任职|特征:触发词位于实体间|特征:距离偏远|特征:类型合法", "证据句": "1945年到1948年，图灵在国家物理实验室负责自动计算引擎（ACE）的研究工作", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "提出", "尾实体": "图灵测试", "来源": "auto_rule", "置信度": "0.872", "触发词": "模板:提出|特征:触发词位于实体间|特征:距离偏远|特征:类型合法", "证据句": "图灵在对人工智能的研究中，提出了一个叫做图灵测试的实验，尝试定出一个决定机器是否有感觉的标准", "建议人工复核": "否"}, {"头实体": "艾伦·图灵", "关系": "发表", "尾实体": "《形态发生的化学基础》", "来源": "auto_rule", "置信度": "0.85", "触发词": "绑定:发表|特征:触发词位于实体间|特征:距离偏远|特征:类型合法", "证据句": "他在1952年发表了一篇论文《形态发生的化学基础》（英语：The Chemical Basis of Morphogenesis）", "建议人工复核": "否"}, {"头实体": "剑桥大学国王学院", "关系": "属于", "尾实体": "剑桥大学", "来源": "auto_rule", "置信度": "0.86", "触发词": "层级归一", "证据句": "1931年，图灵考入剑桥大学国王学院攻读本科，并获得了数学一等荣誉", "建议人工复核": "否"}], "events": [{"event_id": "E0001", "event_type": "教育事件", "trigger": "考入", "subject": "艾伦·图灵", "time": "1926年", "year": 1926, "location": "多塞特郡", "object": "", "participants": "", "cause": "", "result": "", "confidence": "0.91", "evidence_sentence": "1926年，他十三岁的时候考入在多塞特郡的舍伯恩学校", "color": "#14b8a6"}, {"event_id": "E0002", "event_type": "教育事件", "trigger": "考入", "subject": "艾伦·图灵", "time": "1931年", "year": 1931, "location": "剑桥大学国王学院", "object": "剑桥大学国王学院", "participants": "剑桥大学；剑桥", "cause": "", "result": "", "confidence": "0.98", "evidence_sentence": "1931年，图灵考入剑桥大学国王学院攻读本科，并获得了数学一等荣誉", "color": "#14b8a6"}, {"event_id": "E0003", "event_type": "教育事件", "trigger": "毕业", "subject": "艾伦·图灵", "time": "1934年", "year": 1934, "location": "剑桥大学国王学院", "object": "剑桥大学国王学院", "participants": "", "cause": "", "result": "", "confidence": "0.92", "evidence_sentence": "1934年他以优异成绩毕业", "color": "#14b8a6"}, {"event_id": "E0004", "event_type": "获奖荣誉事件", "trigger": "被选为", "subject": "艾伦·图灵", "time": "1935年", "year": 1935, "location": "", "object": "", "participants": "", "cause": "证明中心极限定理的论文", "result": "", "confidence": "0.86", "evidence_sentence": "1935年，22岁的他凭借证明中心极限定理的论文被选为国王学院研究员", "color": "#eab308"}, {"event_id": "E0005", "event_type": "教育事件", "trigger": "学习", "subject": "艾伦·图灵", "time": "1938年", "year": 1938, "location": "普林斯顿大学", "object": "普林斯顿大学", "participants": "Jane Eliza", "cause": "", "result": "", "confidence": "0.94", "evidence_sentence": "1936年9月到1938年7月间，图灵大部分时间都在普林斯顿大学的教堂下学习，第二年被评选为简·伊丽莎·宝洁奖学金客座教授（Jane Eliza Procter Visiting Fellow）", "color": "#14b8a6"}, {"event_id": "E0006", "event_type": "任职事件", "trigger": "兼职工作", "subject": "艾伦·图灵", "time": "1938年", "year": 1938, "location": "英国密码破译组织政府密码和密码学校", "object": "英国密码破译组织政府密码和密码学校", "participants": "", "cause": "", "result": "", "confidence": "0.92", "evidence_sentence": "从1938年9月起，图灵在英国密码破译组织政府密码和密码学校(GC&amp;CS)兼职工作", "color": "#0ea5e9"}, {"event_id": "E0007", "event_type": "密码破译事件", "trigger": "解密", "subject": "艾伦·图灵", "time": "1939年", "year": 1939, "location": "法国", "object": "恩尼格玛密码机", "participants": "", "cause": "", "result": "", "confidence": "0.94", "evidence_sentence": "1939年7月，波兰密码局在华沙附近的会议上向英国和法国提供了恩尼格玛密码机机器的详细信息以及他们解密恩尼格玛密码机机器信息的方法", "color": "#ef4444"}, {"event_id": "E0008", "event_type": "获奖荣誉事件", "trigger": "授予", "subject": "艾伦·图灵", "time": "1946年", "year": 1946, "location": "", "object": "", "participants": "", "cause": "", "result": "", "confidence": "0.86", "evidence_sentence": "图灵被授予1946年大英帝国勋章", "color": "#eab308"}, {"event_id": "E0009", "event_type": "任职事件", "trigger": "负责", "subject": "艾伦·图灵", "time": "1948年", "year": 1948, "location": "国家物理实验室", "object": "国家物理实验室", "participants": "", "cause": "", "result": "", "confidence": "0.96", "evidence_sentence": "1945年到1948年，图灵在国家物理实验室负责自动计算引擎（ACE）的研究工作", "color": "#0ea5e9"}, {"event_id": "E0010", "event_type": "任职事件", "trigger": "副主任", "subject": "艾伦·图灵", "time": "1949年", "year": 1949, "location": "曼彻斯特大学计算机实验室", "object": "曼彻斯特大学计算机实验室", "participants": "", "cause": "", "result": "", "confidence": "0.92", "evidence_sentence": "1949年，他成为曼彻斯特大学计算机实验室的副主任，负责最早的真正的计算机——曼彻斯特一号的软件工作", "color": "#0ea5e9"}, {"event_id": "E0011", "event_type": "获奖荣誉事件", "trigger": "被选为", "subject": "艾伦·图灵", "time": "1951年", "year": 1951, "location": "皇家学会", "object": "皇家学会", "participants": "", "cause": "", "result": "", "confidence": "0.92", "evidence_sentence": "他在1951年还被选为皇家学会（FRS）的成员", "color": "#eab308"}, {"event_id": "E0012", "event_type": "发表事件", "trigger": "发表", "subject": "艾伦·图灵", "time": "1952年", "year": 1952, "location": "", "object": "《形态发生的化学基础》", "participants": "", "cause": "", "result": "", "confidence": "0.94", "evidence_sentence": "他在1952年发表了一篇论文《形态发生的化学基础》（英语：The Chemical Basis of Morphogenesis）", "color": "#f97316"}, {"event_id": "E0013", "event_type": "死亡事件", "trigger": "死亡", "subject": "艾伦·图灵", "time": "1954年", "year": 1954, "location": "", "object": "", "participants": "", "cause": "食用浸过氰化物溶液的苹果而", "result": "", "confidence": "0.9", "evidence_sentence": "1954年，图灵因食用浸过氰化物溶液的苹果而死亡", "color": "#64748b"}, {"event_id": "E0014", "event_type": "获奖荣誉事件", "trigger": "颁发", "subject": "计算机协会", "time": "1966年", "year": 1966, "location": "计算机协会", "object": "计算机协会", "participants": "艾伦·图灵", "cause": "", "result": "", "confidence": "0.92", "evidence_sentence": "自1966年以来，图灵奖每年由计算机协会颁发给计算机界，为其提供技术或理论贡献", "color": "#eab308"}, {"event_id": "E0015", "event_type": "法律迫害事件", "trigger": "赦免", "subject": "英国司法部", "time": "2013年", "year": 2013, "location": "英国", "object": "艾伦·图灵", "participants": "", "cause": "", "result": "", "confidence": "0.9", "evidence_sentence": "2013年12月24日，英国司法部宣布英国女王伊丽莎白二世赦免1952年因同性恋行为被定罪的艾伦·图灵，不过有抗议者指出应将此赦免令范围扩大到所有和图灵同时代且受到同样待遇的同性恋者", "color": "#8b5cf6"}, {"event_id": "E0016", "event_type": "密码破译事件", "trigger": "破译", "subject": "艾伦·图灵", "time": "", "year": 9999, "location": "德国", "object": "恩尼格玛密码机", "participants": "", "cause": "", "result": "使得军情六处对德国的军事指挥和计划了如指掌", "confidence": "0.9", "evidence_sentence": "两年后他的小组成功破译了德国的密码系统恩尼格玛密码机，从而使得军情六处对德国的军事指挥和计划了如指掌", "color": "#ef4444"}, {"event_id": "E0017", "event_type": "密码破译事件", "trigger": "破译", "subject": "艾伦·图灵", "time": "", "year": 9999, "location": "德国", "object": "恩尼格玛密码机", "participants": "温·诺克斯", "cause": "", "result": "", "confidence": "0.94", "evidence_sentence": "他与高级GC&amp;CS密码破译员第利温·诺克斯一起专注于对德国使用的恩尼格玛密码机进行密码分析", "color": "#ef4444"}, {"event_id": "E0018", "event_type": "出生事件", "trigger": "生下", "subject": "艾伦·图灵", "time": "", "year": 9999, "location": "伦敦", "object": "", "participants": "", "cause": "他们希望艾伦在英国出生，所以回到伦敦，住在帕丁顿，并在那里", "result": "", "confidence": "0.95", "evidence_sentence": "因为他们希望艾伦在英国出生，所以回到伦敦，住在帕丁顿，并在那里生下了艾伦", "color": "#3b82f6"}, {"event_id": "E0019", "event_type": "发表事件", "trigger": "写过", "subject": "艾伦·图灵", "time": "", "year": 9999, "location": "", "object": "《计算机器和智能》", "participants": "", "cause": "", "result": "", "confidence": "0.86", "evidence_sentence": "图灵对于人工智能的发展有诸多贡献，例如图灵曾写过一篇名为《计算机器和智能》的论文，提问“机器会思考吗", "color": "#f97316"}, {"event_id": "E0020", "event_type": "设计开发事件", "trigger": "改进", "subject": "艾伦·图灵", "time": "", "year": 9999, "location": "", "object": "恩尼格玛密码机", "participants": "", "cause": "", "result": "", "confidence": "0.85", "evidence_sentence": "图灵的方法更通用，使用基于恩尼格玛分析，他为此制作了炸弹的功能规范（对波兰炸弹的改进）", "color": "#10b981"}, {"event_id": "E0021", "event_type": "设计开发事件", "trigger": "设计", "subject": "艾伦·图灵", "time": "", "year": 9999, "location": "", "object": "恩尼格玛密码机", "participants": "", "cause": "", "result": "", "confidence": "0.85", "evidence_sentence": "期间他设计了一些加速破译德国密码的技术，包括改进波兰战前研制的机器Bombe，一种可以找到恩尼格玛密码机设置的机电机器", "color": "#10b981"}, {"event_id": "E0022", "event_type": "任职事件", "trigger": "负责", "subject": "艾伦·图灵", "time": "二次世界大战期间", "year": 9999, "location": "德国海军", "object": "德国海军", "participants": "", "cause": "", "result": "", "confidence": "0.92", "evidence_sentence": "二次世界大战期间，“Hut 8”小组，负责德国海军密码分析", "color": "#0ea5e9"}], "nodes": [{"id": "艾伦·图灵", "label": "艾伦·图灵", "type": "Person", "subtype": "Person", "degree": 13, "color": "#3b82f6"}, {"id": "图灵测试", "label": "图灵测试", "type": "Concept", "subtype": "Test", "degree": 2, "color": "#8b5cf6"}, {"id": "英国政府", "label": "英国政府", "type": "Unknown", "subtype": "", "degree": 1, "color": "#6b7280"}, {"id": "朱利斯·麦席森·图灵", "label": "朱利斯·麦席森·图灵", "type": "Person", "subtype": "Person", "degree": 1, "color": "#3b82f6"}, {"id": "Ethel Sara Stoney", "label": "Ethel Sara Stoney", "type": "Person", "subtype": "Person", "degree": 1, "color": "#3b82f6"}, {"id": "伦敦", "label": "伦敦", "type": "Location", "subtype": "Location", "degree": 1, "color": "#22c55e"}, {"id": "剑桥大学国王学院", "label": "剑桥大学国王学院", "type": "Organization", "subtype": "University", "degree": 3, "color": "#14b8a6"}, {"id": "停机问题", "label": "停机问题", "type": "Unknown", "subtype": "", "degree": 1, "color": "#6b7280"}, {"id": "恩尼格玛密码机", "label": "恩尼格玛密码机", "type": "Machine", "subtype": "CipherMachine", "degree": 2, "color": "#ef4444"}, {"id": "温·诺克斯", "label": "温·诺克斯", "type": "Person", "subtype": "Person", "degree": 1, "color": "#3b82f6"}, {"id": "英国皇家海军", "label": "英国皇家海军", "type": "Organization", "subtype": "MilitaryAgency", "degree": 1, "color": "#14b8a6"}, {"id": "国家物理实验室", "label": "国家物理实验室", "type": "Organization", "subtype": "ResearchInstitute", "degree": 1, "color": "#14b8a6"}, {"id": "《形态发生的化学基础》", "label": "《形态发生的化学基础》", "type": "Book", "subtype": "Paper", "degree": 1, "color": "#f97316"}, {"id": "剑桥大学", "label": "剑桥大学", "type": "Organization", "subtype": "University", "degree": 1, "color": "#14b8a6"}], "links": [{"source": "艾伦·图灵", "target": "图灵测试", "relation": "研究", "confidence": "0.9", "evidence": "图灵在对人工智能的研究中，提出了一个叫做图灵测试的实验，尝试定出一个决定机器是否有感觉的标准"}, {"source": "英国政府", "target": "艾伦·图灵", "relation": "迫害", "confidence": "0.933", "evidence": "在2009年9月10日，一份超过3万人的请愿签名，使英国首相戈登·布朗在《每日电讯报》撰文，因为英国政府当年以同性恋相关罪名起诉图灵并定罪，让他自杀身亡，正式向艾伦·图灵公开道歉"}, {"source": "艾伦·图灵", "target": "朱利斯·麦席森·图灵", "relation": "父亲", "confidence": "0.85", "evidence": "图灵的父亲朱利斯·麦席森·图灵（Julius Mathison Turing）是一名英属印度的公务员"}, {"source": "艾伦·图灵", "target": "Ethel Sara Stoney", "relation": "母亲", "confidence": "0.885", "evidence": "1911年，图灵的母亲Ethel Sara Stoney在英属印度怀了孕"}, {"source": "艾伦·图灵", "target": "伦敦", "relation": "出生于", "confidence": "0.872", "evidence": "因为他们希望艾伦在英国出生，所以回到伦敦，住在帕丁顿，并在那里生下了艾伦"}, {"source": "艾伦·图灵", "target": "剑桥大学国王学院", "relation": "就读于", "confidence": "0.872", "evidence": "1931年，图灵考入剑桥大学国王学院攻读本科，并获得了数学一等荣誉"}, {"source": "艾伦·图灵", "target": "剑桥大学国王学院", "relation": "毕业于", "confidence": "0.85", "evidence": "1934年他以优异成绩毕业"}, {"source": "艾伦·图灵", "target": "停机问题", "relation": "证明", "confidence": "0.872", "evidence": "他的证明首先展示了图灵机的停机问题没有答案，这是说不可能用一个算法来决定一台指定的图灵机是否会停机"}, {"source": "艾伦·图灵", "target": "恩尼格玛密码机", "relation": "参与破解", "confidence": "0.865", "evidence": "他与高级GC&amp;CS密码破译员第利温·诺克斯一起专注于对德国使用的恩尼格玛密码机进行密码分析"}, {"source": "温·诺克斯", "target": "恩尼格玛密码机", "relation": "参与破解", "confidence": "1.0", "evidence": "他与高级GC&amp;CS密码破译员第利温·诺克斯一起专注于对德国使用的恩尼格玛密码机进行密码分析"}, {"source": "英国皇家海军", "target": "艾伦·图灵", "relation": "聘请", "confidence": "0.872", "evidence": "1939年图灵被英国皇家海军招聘，并在英国军情六处监督下从事对德国机密军事密码的破译工作"}, {"source": "艾伦·图灵", "target": "国家物理实验室", "relation": "任职于", "confidence": "0.892", "evidence": "1945年到1948年，图灵在国家物理实验室负责自动计算引擎（ACE）的研究工作"}, {"source": "艾伦·图灵", "target": "图灵测试", "relation": "提出", "confidence": "0.872", "evidence": "图灵在对人工智能的研究中，提出了一个叫做图灵测试的实验，尝试定出一个决定机器是否有感觉的标准"}, {"source": "艾伦·图灵", "target": "《形态发生的化学基础》", "relation": "发表", "confidence": "0.85", "evidence": "他在1952年发表了一篇论文《形态发生的化学基础》（英语：The Chemical Basis of Morphogenesis）"}, {"source": "剑桥大学国王学院", "target": "剑桥大学", "relation": "属于", "confidence": "0.86", "evidence": "1931年，图灵考入剑桥大学国王学院攻读本科，并获得了数学一等荣誉"}], "stats": {"entity_types": [["Organization", 22], ["Person", 22], ["Location", 15], ["Book", 8], ["Event", 3], ["Concept", 2], ["Machine", 2]], "entity_subtypes": [["Person", 22], ["Location", 6], ["Country", 6], ["University", 6], ["MilitaryAgency", 4], ["Paper", 3], ["Work", 3], ["Organization", 3], ["GovernmentAgency", 3], ["SportsEvent", 2], ["AdministrativeRegion", 2], ["ResearchInstitute", 2], ["Association", 2], ["Law", 1], ["Book", 1], ["Theory", 1], ["Test", 1], ["Event", 1], ["Place", 1], ["CipherMachine", 1], ["Device", 1], ["MediaOrganization", 1], ["Company", 1]], "relations": [["参与破解", 2], ["研究", 1], ["迫害", 1], ["父亲", 1], ["母亲", 1], ["出生于", 1], ["就读于", 1], ["毕业于", 1], ["证明", 1], ["聘请", 1], ["任职于", 1], ["提出", 1], ["发表", 1], ["属于", 1]], "event_types": [["教育事件", 4], ["获奖荣誉事件", 4], ["任职事件", 4], ["密码破译事件", 3], ["发表事件", 2], ["设计开发事件", 2], ["死亡事件", 1], ["法律迫害事件", 1], ["出生事件", 1]]}}</script>
+  <script>
+    const data = JSON.parse(document.getElementById('kgData').textContent);
+    const typeColors = {"Person": "#3b82f6", "Organization": "#14b8a6", "Location": "#22c55e", "Book": "#f97316", "Concept": "#8b5cf6", "Machine": "#ef4444", "Event": "#64748b", "Unknown": "#6b7280"};
+    const eventColors = {"出生事件": "#3b82f6", "教育事件": "#14b8a6", "发表事件": "#f97316", "密码破译事件": "#ef4444", "法律迫害事件": "#8b5cf6", "任职事件": "#0ea5e9", "获奖荣誉事件": "#eab308", "设计开发事件": "#10b981", "研究事件": "#6366f1", "死亡事件": "#64748b"};
+    const summary = document.getElementById('summary');
+    const tip = document.getElementById('tip');
+
+    function escapeText(value) {
+      return String(value ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+    }
+
+    function fillSummary() {
+      const items = [
+        ['实体数量', data.summary.entity_count],
+        ['核心关系', data.summary.triple_count],
+        ['核心事件', data.summary.event_count],
+        ['事件含时间占比', data.summary.event_time_pct + '%'],
+      ];
+      summary.innerHTML = items.map(([label, value]) => `<div class="metric"><strong>${value}</strong><span>${label}</span></div>`).join('');
+    }
+
+    function unique(values) {
+      return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'zh-Hans-CN'));
+    }
+
+    function rowText(row) {
+      return Object.values(row).join(' ').toLowerCase();
+    }
+
+    function resultGroup(title, rows, renderer) {
+      const body = rows.length
+        ? rows.slice(0, 10).map(renderer).join('')
+        : '<div class="result-item muted">没有匹配结果</div>';
+      return `<div class="result-group"><h3>${title}（${rows.length}）</h3><div class="result-list">${body}</div></div>`;
+    }
+
+    function renderSearch() {
+      const keyword = document.getElementById('kgSearchInput').value.trim().toLowerCase();
+      const target = document.getElementById('kgSearchResults');
+      if (!keyword) {
+        target.innerHTML = '<div class="result-group"><h3>提示</h3><div class="result-list"><div class="result-item muted">输入关键词后，可以同时检索实体、核心三元组和核心事件。</div></div></div>';
+        return;
+      }
+      const entityRows = data.entities.filter(row => rowText(row).toLowerCase().includes(keyword));
+      const tripleRows = data.triples.filter(row => rowText(row).toLowerCase().includes(keyword));
+      const eventRows = data.events.filter(row => rowText(row).toLowerCase().includes(keyword));
+      target.innerHTML =
+        resultGroup('实体', entityRows, row => `
+          <div class="result-item">
+            <div class="result-title">${escapeText(row['实体名称'])}</div>
+            <div class="result-meta">类型：${escapeText(row['实体类型'] || '未知')} ｜ 子类型：${escapeText(row['实体子类型'] || '无')} ｜ 置信度：${escapeText(row['置信度'] || '')}</div>
+          </div>`) +
+        resultGroup('关系', tripleRows, row => `
+          <div class="result-item">
+            <div class="result-title">${escapeText(row['头实体'])} → ${escapeText(row['关系'])} → ${escapeText(row['尾实体'])}</div>
+            <div class="result-meta">置信度：${escapeText(row['置信度'])}</div>
+            <div>${escapeText(row['证据句'])}</div>
+          </div>`) +
+        resultGroup('事件', eventRows, row => `
+          <div class="result-item">
+            <div class="result-title">${escapeText(row.time || '时间未知')} · ${escapeText(row.event_type)} · ${escapeText(row.trigger)}</div>
+            <div class="result-meta">主体：${escapeText(row.subject || '无')} ｜ 客体：${escapeText(row.object || '无')} ｜ 地点/机构：${escapeText(row.location || '无')}</div>
+            <div>${escapeText(row.evidence_sentence)}</div>
+          </div>`);
+    }
+
+    function fillFilters() {
+      const typeFilter = document.getElementById('typeFilter');
+      unique(data.nodes.map(n => n.type)).forEach(v => typeFilter.add(new Option(v, v)));
+      const relationFilter = document.getElementById('relationFilter');
+      unique(data.links.map(e => e.relation)).forEach(v => relationFilter.add(new Option(v, v)));
+      const eventFilter = document.getElementById('eventFilter');
+      unique(data.events.map(e => e.event_type)).forEach(v => eventFilter.add(new Option(v, v)));
+      document.getElementById('legend').innerHTML = Object.entries(typeColors)
+        .filter(([k]) => data.nodes.some(n => n.type === k))
+        .map(([k, c]) => `<span><i class="dot" style="background:${c}"></i>${k}</span>`).join('');
+    }
+
+    function renderGraph() {
+      const svg = document.getElementById('graph');
+      const width = svg.clientWidth || 1000;
+      const height = svg.clientHeight || 620;
+      const typeValue = document.getElementById('typeFilter').value;
+      const relationValue = document.getElementById('relationFilter').value;
+      let links = data.links.filter(e => !relationValue || e.relation === relationValue);
+      let nodeIds = new Set(links.flatMap(e => [e.source, e.target]));
+      let nodes = data.nodes.filter(n => nodeIds.has(n.id) && (!typeValue || n.type === typeValue));
+      nodeIds = new Set(nodes.map(n => n.id));
+      links = links.filter(e => nodeIds.has(e.source) && nodeIds.has(e.target));
+
+      const nodeMap = new Map(nodes.map((n, i) => [n.id, {
+        ...n,
+        x: width / 2 + Math.cos(i * 2.399) * Math.min(width, height) * .28,
+        y: height / 2 + Math.sin(i * 2.399) * Math.min(width, height) * .28,
+        vx: 0,
+        vy: 0,
+      }]));
+      const simLinks = links.map(e => ({...e, sourceNode: nodeMap.get(e.source), targetNode: nodeMap.get(e.target)}));
+
+      for (let tick = 0; tick < 260; tick++) {
+        for (const a of nodeMap.values()) {
+          for (const b of nodeMap.values()) {
+            if (a === b) continue;
+            const dx = a.x - b.x;
+            const dy = a.y - b.y;
+            const dist2 = Math.max(dx * dx + dy * dy, 80);
+            const force = 900 / dist2;
+            a.vx += dx * force * .01;
+            a.vy += dy * force * .01;
+          }
+        }
+        for (const e of simLinks) {
+          const a = e.sourceNode, b = e.targetNode;
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const wanted = 130;
+          const force = (dist - wanted) * .012;
+          const fx = dx / dist * force;
+          const fy = dy / dist * force;
+          a.vx += fx; a.vy += fy;
+          b.vx -= fx; b.vy -= fy;
+        }
+        for (const n of nodeMap.values()) {
+          n.vx += (width / 2 - n.x) * .002;
+          n.vy += (height / 2 - n.y) * .002;
+          n.vx *= .82;
+          n.vy *= .82;
+          n.x = Math.max(36, Math.min(width - 36, n.x + n.vx));
+          n.y = Math.max(36, Math.min(height - 36, n.y + n.vy));
+        }
+      }
+
+      const drawableLinks = simLinks.map(e => {
+        const a = e.sourceNode, b = e.targetNode;
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+        const sourceRadius = Math.min(24, 10 + a.degree * 2);
+        const targetRadius = Math.min(24, 10 + b.degree * 2);
+        return {
+          ...e,
+          sx: a.x + dx / dist * (sourceRadius + 2),
+          sy: a.y + dy / dist * (sourceRadius + 2),
+          tx: b.x - dx / dist * (targetRadius + 8),
+          ty: b.y - dy / dist * (targetRadius + 8),
+        };
+      });
+
+      svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+      svg.innerHTML = `
+        <defs>
+          <marker id="arrow" markerWidth="14" markerHeight="14" refX="12" refY="4" orient="auto" markerUnits="strokeWidth">
+            <path d="M0,0 L0,8 L12,4 z" fill="#475569"></path>
+          </marker>
+        </defs>
+        ${drawableLinks.map(e => `<line x1="${e.sx}" y1="${e.sy}" x2="${e.tx}" y2="${e.ty}" stroke="#64748b" stroke-width="2" marker-end="url(#arrow)"></line>
+          <text x="${(e.sourceNode.x + e.targetNode.x) / 2}" y="${(e.sourceNode.y + e.targetNode.y) / 2 - 4}" fill="#475569" font-size="12" text-anchor="middle">${escapeText(e.relation)}</text>`).join('')}
+        ${[...nodeMap.values()].map(n => `<g class="node" data-name="${escapeText(n.id)}" data-type="${escapeText(n.type)}" data-subtype="${escapeText(n.subtype)}" transform="translate(${n.x},${n.y})">
+          <circle r="${Math.min(24, 10 + n.degree * 2)}" fill="${n.color}" stroke="#fff" stroke-width="2"></circle>
+          <text y="${Math.min(36, 22 + n.degree * 2)}" text-anchor="middle" font-size="12" fill="#0f172a">${escapeText(n.label)}</text>
+        </g>`).join('')}
+      `;
+      svg.querySelectorAll('.node').forEach(el => {
+        el.addEventListener('mousemove', ev => showTip(ev, `<b>${el.dataset.name}</b><br>类型：${el.dataset.type}<br>子类型：${el.dataset.subtype || '无'}`));
+        el.addEventListener('mouseleave', hideTip);
+      });
+    }
+
+    function showTip(ev, content) {
+      tip.innerHTML = content;
+      tip.style.display = 'block';
+      tip.style.left = Math.min(window.innerWidth - 380, ev.clientX + 14) + 'px';
+      tip.style.top = (ev.clientY + 14) + 'px';
+    }
+
+    function hideTip() {
+      tip.style.display = 'none';
+    }
+
+    function renderTimeline() {
+      const filter = document.getElementById('eventFilter').value;
+      const rows = data.events.filter(e => !filter || e.event_type === filter);
+      const datedRows = rows.filter(e => e.year !== 9999);
+      const undatedRows = rows.filter(e => e.year === 9999);
+      const renderRows = items => items.map(e => `
+        <div class="event" style="--event-color:${e.color}">
+          <div class="event-title">${escapeText(e.time || '时间未知')} · ${escapeText(e.event_type)} · ${escapeText(e.trigger)}</div>
+          <div class="event-meta">主体：${escapeText(e.subject || '无')} ｜ 地点/机构：${escapeText(e.location || '无')} ｜ 客体：${escapeText(e.object || '无')} ｜ 置信度：${escapeText(e.confidence)}</div>
+          <div class="event-sentence">${escapeText(e.evidence_sentence)}</div>
+        </div>`).join('');
+      document.getElementById('timeline').innerHTML =
+        renderRows(datedRows) +
+        (undatedRows.length ? `<h3 class="muted">未明确时间事件</h3>${renderRows(undatedRows)}` : '');
+    }
+
+    function renderStatsBlock(title, rows, color) {
+      const max = Math.max(1, ...rows.map(r => r[1]));
+      return `<div><h3>${title}</h3>${rows.map(([name, count]) => `
+        <div class="bar-row">
+          <div class="bar-name" title="${escapeText(name)}">${escapeText(name)}</div>
+          <div class="bar-track"><div class="bar-fill" style="width:${count * 100 / max}%;background:${color}"></div></div>
+          <div>${count}</div>
+        </div>`).join('')}</div>`;
+    }
+
+    function renderStats() {
+      document.getElementById('stats').innerHTML =
+        renderStatsBlock('实体主类型', data.stats.entity_types, '#2563eb') +
+        renderStatsBlock('实体子类型', data.stats.entity_subtypes.slice(0, 12), '#14b8a6') +
+        renderStatsBlock('关系类型', data.stats.relations, '#f97316') +
+        renderStatsBlock('事件类型', data.stats.event_types, '#8b5cf6');
+    }
+
+    function renderTripleTable() {
+      const rows = data.triples;
+      document.getElementById('tripleTable').innerHTML = `
+        <thead><tr><th>头实体</th><th>关系</th><th>尾实体</th><th>置信度</th><th>证据句</th></tr></thead>
+        <tbody>${rows.map(r => `<tr>
+          <td>${escapeText(r['头实体'])}</td>
+          <td>${escapeText(r['关系'])}</td>
+          <td>${escapeText(r['尾实体'])}</td>
+          <td>${escapeText(r['置信度'])}</td>
+          <td>${escapeText(r['证据句'])}</td>
+        </tr>`).join('')}</tbody>`;
+    }
+
+    fillSummary();
+    fillFilters();
+    renderSearch();
+    renderGraph();
+    renderTimeline();
+    renderStats();
+    renderTripleTable();
+    document.getElementById('kgSearchButton').addEventListener('click', renderSearch);
+    document.getElementById('kgSearchInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        renderSearch();
+      }
+    });
+    document.getElementById('kgSearchInput').addEventListener('input', event => {
+      if (!event.target.value.trim()) {
+        renderSearch();
+      }
+    });
+    document.getElementById('typeFilter').addEventListener('change', renderGraph);
+    document.getElementById('relationFilter').addEventListener('change', renderGraph);
+    document.getElementById('eventFilter').addEventListener('change', renderTimeline);
+    document.getElementById('resetGraph').addEventListener('click', () => {
+      document.getElementById('typeFilter').value = '';
+      document.getElementById('relationFilter').value = '';
+      renderGraph();
+    });
+    window.addEventListener('resize', renderGraph);
+  </script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+# Python 缓存与本地环境
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# 本地编辑器与系统文件
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# 临时文件与日志
+*.log
+*.tmp
+~$*
+
+# 可按需重新生成的缓存
+.pytest_cache/

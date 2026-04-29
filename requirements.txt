@@ -1,0 +1,7 @@
+requests
+zhconv
+spacy
+sklearn-crfsuite
+joblib
+scikit-learn
+rdflib

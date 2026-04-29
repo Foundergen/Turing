@@ -1,0 +1,10 @@
+entity_type,name,enabled,comment
+Person,氰化物,1,物质误识别人名
+Person,叶序列,1,概念片段误识别人名
+Person,波兰战,1,事件片段误识别人名
+Person,英国电脑,1,描述片段误识别人名
+Person,GC,1,缩写片段误识别人名
+Person,林斯顿,1,地名或机构残片误识别人名
+Organization,通用,1,普通形容词误识别组织
+Organization,英国皇家,1,机构前缀残片
+Organization,英国电脑,1,描述片段误识别组织

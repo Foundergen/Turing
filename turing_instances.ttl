@@ -1,0 +1,582 @@
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix turing: <http://www.semanticweb.org/turing-kg#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+<http://www.semanticweb.org/turing-kg#%E3%80%8A%E5%AE%98%E6%96%B9%E4%BF%9D%E5%AF%86%E6%B3%95%E3%80%8B> a turing:Book ;
+    rdfs:label "《官方保密法》"@zh ;
+    turing:entitySubtype "Law" .
+
+<http://www.semanticweb.org/turing-kg#%E3%80%8A%E6%A8%A1%E4%BB%BF%E6%B8%B8%E6%88%8F%E3%80%8B> a turing:Book ;
+    rdfs:label "《模仿游戏》"@zh ;
+    turing:entitySubtype "Work" .
+
+<http://www.semanticweb.org/turing-kg#%E3%80%8A%E8%87%AA%E7%84%B6%E3%80%8B> a turing:Book ;
+    rdfs:label "《自然》"@zh ;
+    turing:entitySubtype "Work" .
+
+<http://www.semanticweb.org/turing-kg#%E3%80%8A%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5%E9%80%89%E9%9B%86%E3%80%8B> a turing:Book ;
+    rdfs:label "《艾伦·图灵选集》"@zh ;
+    turing:entitySubtype "Book" .
+
+<http://www.semanticweb.org/turing-kg#%E3%80%8A%E8%A7%A3%E7%A0%81%E7%BA%B3%E7%B2%B9%E7%A7%98%E5%AF%86%E3%80%8B> a turing:Book ;
+    rdfs:label "《解码纳粹秘密》"@zh ;
+    turing:entitySubtype "Work" .
+
+<http://www.semanticweb.org/turing-kg#%E3%80%8A%E8%AE%BA%E5%8F%AF%E8%AE%A1%E7%AE%97%E6%95%B0%E5%8F%8A%E5%85%B6%E5%9C%A8%E5%88%A4%E5%AE%9A%E9%97%AE%E9%A2%98%E4%B8%8A%E7%9A%84%E5%BA%94%E7%94%A8%E3%80%8B> a turing:Book ;
+    rdfs:label "《论可计算数及其在判定问题上的应用》"@zh ;
+    turing:entitySubtype "Paper" .
+
+<http://www.semanticweb.org/turing-kg#%E4%B8%8A%E8%AE%AE%E9%99%A2> a turing:Organization ;
+    rdfs:label "上议院"@zh ;
+    turing:entitySubtype "GovernmentAgency" .
+
+<http://www.semanticweb.org/turing-kg#%E4%B8%AD%E5%A4%AE%E7%A0%94%E7%A9%B6%E9%99%A2> a turing:Organization ;
+    rdfs:label "中央研究院"@zh ;
+    turing:entitySubtype "ResearchInstitute" .
+
+<http://www.semanticweb.org/turing-kg#%E5%86%AF%C2%B7%E8%AF%BA%E4%BE%9D%E6%9B%BC> a turing:Person ;
+    rdfs:label "冯·诺依曼"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E5%8D%97%E5%AE%89%E6%99%AE%E9%A1%BF> a turing:Location ;
+    rdfs:label "南安普顿"@zh ;
+    turing:entitySubtype "Location" .
+
+<http://www.semanticweb.org/turing-kg#%E5%8D%B0%E5%BA%A6> a turing:Location ;
+    rdfs:label "印度"@zh ;
+    turing:entitySubtype "Country" .
+
+<http://www.semanticweb.org/turing-kg#%E5%8F%8D%E5%BA%94-%E6%89%A9%E6%95%A3%E5%85%AC%E5%BC%8F> a turing:Concept ;
+    rdfs:label "反应-扩散公式"@zh ;
+    turing:entitySubtype "Theory" .
+
+<http://www.semanticweb.org/turing-kg#%E5%8F%B0%E5%A4%A7> a turing:Organization ;
+    rdfs:label "台大"@zh ;
+    turing:entitySubtype "Organization" .
+
+<http://www.semanticweb.org/turing-kg#%E5%8F%B2%E8%92%82%E5%A4%AB%C2%B7%E4%B9%94%E5%B8%83%E6%96%AF> a turing:Person ;
+    rdfs:label "史蒂夫·乔布斯"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E5%8F%B2%E8%92%82%E8%8A%AC%C2%B7%E5%BC%97%E8%8E%B1> a turing:Person ;
+    rdfs:label "史蒂芬·弗莱"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E5%90%89%E5%B0%94%E7%A6%8F%E5%BE%B7> a turing:Location ;
+    rdfs:label "吉尔福德"@zh ;
+    turing:entitySubtype "Location" .
+
+<http://www.semanticweb.org/turing-kg#%E5%93%88%E9%87%8C%C2%B7%E6%AC%A3%E6%96%AF%E5%88%A9> a turing:Person ;
+    rdfs:label "哈里·欣斯利"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E5%9C%A3%E8%BF%88%E5%85%8B%E5%B0%94> a turing:Person ;
+    rdfs:label "圣迈克尔"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E5%A4%A7%E8%A5%BF%E6%B4%8B> a turing:Location ;
+    rdfs:label "大西洋"@zh ;
+    turing:entitySubtype "Location" .
+
+<http://www.semanticweb.org/turing-kg#%E5%A5%A5%E8%BF%90%E4%BC%9A> a turing:NamedEvent ;
+    rdfs:label "奥运会"@zh ;
+    turing:entitySubtype "SportsEvent" .
+
+<http://www.semanticweb.org/turing-kg#%E5%B8%83%E8%8E%B1%E5%88%87%E5%88%A9%E5%BA%84%E5%9B%AD> a turing:Location ;
+    rdfs:label "布莱切利庄园"@zh ;
+    turing:entitySubtype "Place" .
+
+<http://www.semanticweb.org/turing-kg#%E5%B8%8C%E5%B0%94%E9%A1%BF> a turing:Person ;
+    rdfs:label "希尔顿"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E6%9C%AC%E5%B0%BC%E8%BF%AA%E5%85%8B%E7%89%B9%C2%B7%E5%BA%B7%E4%BC%AF%E5%B7%B4%E5%A5%87> a turing:Person ;
+    rdfs:label "本尼迪克特·康伯巴奇"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E6%A1%A3%E6%A1%88%E9%A6%86> a turing:Person ;
+    rdfs:label "档案馆"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E6%AC%A7%E6%B4%B2> a turing:Location ;
+    rdfs:label "欧洲"@zh ;
+    turing:entitySubtype "Location" .
+
+<http://www.semanticweb.org/turing-kg#%E6%AF%8F%E6%97%A5%E7%94%B5%E8%AE%AF%E6%8A%A5> a turing:Organization ;
+    rdfs:label "每日电讯报"@zh ;
+    turing:entitySubtype "MediaOrganization" .
+
+<http://www.semanticweb.org/turing-kg#%E6%B1%A4%E5%A7%86%C2%B7%E7%90%86%E6%9F%A5%E5%85%B9> a turing:Person ;
+    rdfs:label "汤姆·理查兹"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E6%B3%A2%E5%85%B0> a turing:Location ;
+    rdfs:label "波兰"@zh ;
+    turing:entitySubtype "Country" .
+
+<http://www.semanticweb.org/turing-kg#%E7%88%B1%E5%9B%A0%E6%96%AF%E5%9D%A6> a turing:Person ;
+    rdfs:label "爱因斯坦"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E7%AC%AC%E4%BA%8C%E6%AC%A1%E4%B8%96%E7%95%8C%E5%A4%A7%E6%88%98> a turing:NamedEvent ;
+    rdfs:label "第二次世界大战"@zh ;
+    turing:entitySubtype "Event" .
+
+<http://www.semanticweb.org/turing-kg#%E7%BE%8E%E5%9B%BD> a turing:Location ;
+    rdfs:label "美国"@zh ;
+    turing:entitySubtype "Country" .
+
+<http://www.semanticweb.org/turing-kg#%E7%BE%8E%E5%9B%BD%E5%9B%BD%E4%BC%9A> a turing:Organization ;
+    rdfs:label "美国国会"@zh ;
+    turing:entitySubtype "GovernmentAgency" .
+
+<http://www.semanticweb.org/turing-kg#%E7%BE%8E%E5%9B%BD%E6%96%B0%E5%A2%A8%E8%A5%BF%E5%93%A5%E5%B7%9E> a turing:Location ;
+    rdfs:label "美国新墨西哥州"@zh ;
+    turing:entitySubtype "AdministrativeRegion" .
+
+<http://www.semanticweb.org/turing-kg#%E8%87%AA%E5%8A%A8%E8%AE%A1%E7%AE%97%E5%BC%95%E6%93%8E> a turing:Machine ;
+    rdfs:label "自动计算引擎"@zh ;
+    turing:entitySubtype "Device" .
+
+<http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5%E5%B9%B4> a turing:Person ;
+    rdfs:label "艾伦·图灵年"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD%E5%86%9B%E6%83%85%E5%85%AD%E5%A4%84> a turing:Organization ;
+    rdfs:label "英国军情六处"@zh ;
+    turing:entitySubtype "MilitaryAgency" .
+
+<http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD%E6%94%BF%E5%BA%9C> a turing:Entity ;
+    rdfs:label "英国政府"@zh ;
+    turing:persecuted <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> .
+
+<http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD%E7%9A%87%E5%AE%B6%E6%B5%B7%E5%86%9B> a turing:Organization ;
+    rdfs:label "英国皇家海军"@zh ;
+    turing:entitySubtype "MilitaryAgency" ;
+    turing:hired <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> .
+
+<http://www.semanticweb.org/turing-kg#%E8%8B%B9%E6%9E%9C%E5%85%AC%E5%8F%B8> a turing:Organization ;
+    rdfs:label "苹果公司"@zh ;
+    turing:entitySubtype "Company" .
+
+<http://www.semanticweb.org/turing-kg#%E9%98%BF%E5%B0%94%E4%BC%AF%E7%89%B9%C2%B7%E7%88%B1%E5%9B%A0%E6%96%AF%E5%9D%A6> a turing:Person ;
+    rdfs:label "阿尔伯特·爱因斯坦"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E9%98%BF%E9%9A%86%E4%BD%90%C2%B7%E9%82%B1%E5%A5%87> a turing:Person ;
+    rdfs:label "阿隆佐·邱奇"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E9%A9%AC%E5%B0%94%E4%BC%AF%E5%8B%92%E5%AD%A6%E9%99%A2> a turing:Organization ;
+    rdfs:label "马尔伯勒学院"@zh ;
+    turing:entitySubtype "University" .
+
+<http://www.semanticweb.org/turing-kg#%E9%BA%A6%E5%85%8B%E7%BA%B3%E5%88%A9> a turing:Location ;
+    rdfs:label "麦克纳利"@zh ;
+    turing:entitySubtype "Location" .
+
+turing:1948%E5%B9%B4%E5%A5%A5%E6%9E%97%E5%8C%B9%E5%85%8B%E8%BF%90%E5%8A%A8%E4%BC%9A a turing:NamedEvent ;
+    rdfs:label "1948年奥林匹克运动会"@zh ;
+    turing:entitySubtype "SportsEvent" .
+
+turing:Asa_Briggs a turing:Person ;
+    rdfs:label "Asa Briggs"@zh ;
+    turing:entitySubtype "Person" .
+
+turing:E0016 a turing:Event ;
+    rdfs:label "密码破译事件:E0016"@zh ;
+    turing:confidence 0.9 ;
+    turing:eventType "密码破译事件" ;
+    turing:evidenceSentence "两年后他的小组成功破译了德国的密码系统恩尼格玛密码机，从而使得军情六处对德国的军事指挥和计划了如指掌" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E5%BE%B7%E5%9B%BD> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E6%81%A9%E5%B0%BC%E6%A0%BC%E7%8E%9B%E5%AF%86%E7%A0%81%E6%9C%BA> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:result "使得军情六处对德国的军事指挥和计划了如指掌" ;
+    turing:trigger "破译" .
+
+turing:E0017 a turing:Event ;
+    rdfs:label "密码破译事件:E0017"@zh ;
+    turing:confidence 0.94 ;
+    turing:eventType "密码破译事件" ;
+    turing:evidenceSentence "他与高级GC&CS密码破译员第利温·诺克斯一起专注于对德国使用的恩尼格玛密码机进行密码分析" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E5%BE%B7%E5%9B%BD> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E6%81%A9%E5%B0%BC%E6%A0%BC%E7%8E%9B%E5%AF%86%E7%A0%81%E6%9C%BA> ;
+    turing:hasParticipant <http://www.semanticweb.org/turing-kg#%E6%B8%A9%C2%B7%E8%AF%BA%E5%85%8B%E6%96%AF> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:trigger "破译" .
+
+turing:E0018 a turing:Event ;
+    rdfs:label "出生事件:E0018"@zh ;
+    turing:cause "他们希望艾伦在英国出生，所以回到伦敦，住在帕丁顿，并在那里" ;
+    turing:confidence 0.95 ;
+    turing:eventType "出生事件" ;
+    turing:evidenceSentence "因为他们希望艾伦在英国出生，所以回到伦敦，住在帕丁顿，并在那里生下了艾伦" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E4%BC%A6%E6%95%A6> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:trigger "生下" .
+
+turing:E0019 a turing:Event ;
+    rdfs:label "发表事件:E0019"@zh ;
+    turing:confidence 0.86 ;
+    turing:eventType "发表事件" ;
+    turing:evidenceSentence "图灵对于人工智能的发展有诸多贡献，例如图灵曾写过一篇名为《计算机器和智能》的论文，提问“机器会思考吗" ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E3%80%8A%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%99%A8%E5%92%8C%E6%99%BA%E8%83%BD%E3%80%8B> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:trigger "写过" .
+
+turing:E0020 a turing:Event ;
+    rdfs:label "设计开发事件:E0020"@zh ;
+    turing:confidence 0.85 ;
+    turing:eventType "设计开发事件" ;
+    turing:evidenceSentence "图灵的方法更通用，使用基于恩尼格玛分析，他为此制作了炸弹的功能规范（对波兰炸弹的改进）" ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E6%81%A9%E5%B0%BC%E6%A0%BC%E7%8E%9B%E5%AF%86%E7%A0%81%E6%9C%BA> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:trigger "改进" .
+
+turing:E0021 a turing:Event ;
+    rdfs:label "设计开发事件:E0021"@zh ;
+    turing:confidence 0.85 ;
+    turing:eventType "设计开发事件" ;
+    turing:evidenceSentence "期间他设计了一些加速破译德国密码的技术，包括改进波兰战前研制的机器Bombe，一种可以找到恩尼格玛密码机设置的机电机器" ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E6%81%A9%E5%B0%BC%E6%A0%BC%E7%8E%9B%E5%AF%86%E7%A0%81%E6%9C%BA> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:trigger "设计" .
+
+turing:E0022 a turing:Event ;
+    rdfs:label "任职事件:E0022"@zh ;
+    turing:confidence 0.92 ;
+    turing:eventType "任职事件" ;
+    turing:evidenceSentence "二次世界大战期间，“Hut 8”小组，负责德国海军密码分析" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E5%BE%B7%E5%9B%BD%E6%B5%B7%E5%86%9B> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E5%BE%B7%E5%9B%BD%E6%B5%B7%E5%86%9B> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "二次世界大战期间" ;
+    turing:trigger "负责" .
+
+turing:GCHQ a turing:Organization ;
+    rdfs:label "GCHQ"@zh ;
+    turing:entitySubtype "MilitaryAgency" .
+
+turing:Julius a turing:Person ;
+    rdfs:label "Julius"@zh ;
+    turing:entitySubtype "Person" .
+
+turing:NVIDIA a turing:Organization ;
+    rdfs:label "NVIDIA"@zh ;
+    turing:entitySubtype "Organization" .
+
+turing:Ronald_Lewin a turing:Person ;
+    rdfs:label "Ronald Lewin"@zh ;
+    turing:entitySubtype "Person" .
+
+turing:Sara_Stoney a turing:Person ;
+    rdfs:label "Sara Stoney"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E3%80%8A%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%99%A8%E5%92%8C%E6%99%BA%E8%83%BD%E3%80%8B> a turing:Book ;
+    rdfs:label "《计算机器和智能》"@zh ;
+    turing:entitySubtype "Paper" .
+
+<http://www.semanticweb.org/turing-kg#%E5%81%9C%E6%9C%BA%E9%97%AE%E9%A2%98> a turing:Entity ;
+    rdfs:label "停机问题"@zh .
+
+<http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5> a turing:Organization ;
+    rdfs:label "剑桥"@zh ;
+    turing:entitySubtype "Organization" .
+
+<http://www.semanticweb.org/turing-kg#%E5%A4%9A%E5%A1%9E%E7%89%B9%E9%83%A1> a turing:Location ;
+    rdfs:label "多塞特郡"@zh ;
+    turing:entitySubtype "AdministrativeRegion" .
+
+<http://www.semanticweb.org/turing-kg#%E6%9C%B1%E5%88%A9%E6%96%AF%C2%B7%E9%BA%A6%E5%B8%AD%E6%A3%AE%C2%B7%E5%9B%BE%E7%81%B5> a turing:Person ;
+    rdfs:label "朱利斯·麦席森·图灵"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E6%B3%95%E5%9B%BD> a turing:Location ;
+    rdfs:label "法国"@zh ;
+    turing:entitySubtype "Country" .
+
+<http://www.semanticweb.org/turing-kg#%E6%B8%A9%C2%B7%E8%AF%BA%E5%85%8B%E6%96%AF> a turing:Person ;
+    rdfs:label "温·诺克斯"@zh ;
+    turing:entitySubtype "Person" ;
+    turing:participatedInCryptanalysis <http://www.semanticweb.org/turing-kg#%E6%81%A9%E5%B0%BC%E6%A0%BC%E7%8E%9B%E5%AF%86%E7%A0%81%E6%9C%BA> .
+
+<http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD> a turing:Location ;
+    rdfs:label "英国"@zh ;
+    turing:entitySubtype "Country" .
+
+<http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD%E5%8F%B8%E6%B3%95%E9%83%A8> a turing:Organization ;
+    rdfs:label "英国司法部"@zh ;
+    turing:entitySubtype "GovernmentAgency" .
+
+turing:E0001 a turing:Event ;
+    rdfs:label "教育事件:E0001"@zh ;
+    turing:beforeEvent turing:E0002 ;
+    turing:confidence 0.91 ;
+    turing:eventType "教育事件" ;
+    turing:evidenceSentence "1926年，他十三岁的时候考入在多塞特郡的舍伯恩学校" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E5%A4%9A%E5%A1%9E%E7%89%B9%E9%83%A1> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1926年" ;
+    turing:trigger "考入" .
+
+turing:E0015 a turing:Event ;
+    rdfs:label "法律迫害事件:E0015"@zh ;
+    turing:afterEvent turing:E0014 ;
+    turing:confidence 0.9 ;
+    turing:eventType "法律迫害事件" ;
+    turing:evidenceSentence "2013年12月24日，英国司法部宣布英国女王伊丽莎白二世赦免1952年因同性恋行为被定罪的艾伦·图灵，不过有抗议者指出应将此赦免令范围扩大到所有和图灵同时代且受到同样待遇的同性恋者" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD%E5%8F%B8%E6%B3%95%E9%83%A8> ;
+    turing:time "2013年" ;
+    turing:trigger "赦免" .
+
+turing:Ethel_Sara_Stoney a turing:Person ;
+    rdfs:label "Ethel Sara Stoney"@zh ;
+    turing:entitySubtype "Person" .
+
+turing:Jane_Eliza a turing:Person ;
+    rdfs:label "Jane Eliza"@zh ;
+    turing:entitySubtype "Person" .
+
+<http://www.semanticweb.org/turing-kg#%E3%80%8A%E5%BD%A2%E6%80%81%E5%8F%91%E7%94%9F%E7%9A%84%E5%8C%96%E5%AD%A6%E5%9F%BA%E7%A1%80%E3%80%8B> a turing:Book ;
+    rdfs:label "《形态发生的化学基础》"@zh ;
+    turing:entitySubtype "Paper" .
+
+<http://www.semanticweb.org/turing-kg#%E4%BC%A6%E6%95%A6> a turing:Location ;
+    rdfs:label "伦敦"@zh ;
+    turing:entitySubtype "Location" .
+
+<http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6> a turing:Organization ;
+    rdfs:label "剑桥大学"@zh ;
+    turing:entitySubtype "University" .
+
+<http://www.semanticweb.org/turing-kg#%E5%9B%BE%E7%81%B5%E6%B5%8B%E8%AF%95> a turing:Concept ;
+    rdfs:label "图灵测试"@zh ;
+    turing:entitySubtype "Test" .
+
+<http://www.semanticweb.org/turing-kg#%E5%BE%B7%E5%9B%BD> a turing:Location ;
+    rdfs:label "德国"@zh ;
+    turing:entitySubtype "Country" .
+
+<http://www.semanticweb.org/turing-kg#%E5%BE%B7%E5%9B%BD%E6%B5%B7%E5%86%9B> a turing:Organization ;
+    rdfs:label "德国海军"@zh ;
+    turing:entitySubtype "MilitaryAgency" .
+
+<http://www.semanticweb.org/turing-kg#%E6%99%AE%E6%9E%97%E6%96%AF%E9%A1%BF%E5%A4%A7%E5%AD%A6> a turing:Organization ;
+    rdfs:label "普林斯顿大学"@zh ;
+    turing:entitySubtype "University" .
+
+<http://www.semanticweb.org/turing-kg#%E6%9B%BC%E5%BD%BB%E6%96%AF%E7%89%B9%E5%A4%A7%E5%AD%A6%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%9E%E9%AA%8C%E5%AE%A4> a turing:Organization ;
+    rdfs:label "曼彻斯特大学计算机实验室"@zh ;
+    turing:entitySubtype "University" .
+
+<http://www.semanticweb.org/turing-kg#%E7%9A%87%E5%AE%B6%E5%AD%A6%E4%BC%9A> a turing:Organization ;
+    rdfs:label "皇家学会"@zh ;
+    turing:entitySubtype "Association" .
+
+<http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD%E5%AF%86%E7%A0%81%E7%A0%B4%E8%AF%91%E7%BB%84%E7%BB%87%E6%94%BF%E5%BA%9C%E5%AF%86%E7%A0%81%E5%92%8C%E5%AF%86%E7%A0%81%E5%AD%A6%E6%A0%A1> a turing:Organization ;
+    rdfs:label "英国密码破译组织政府密码和密码学校"@zh ;
+    turing:entitySubtype "University" .
+
+turing:E0002 a turing:Event ;
+    rdfs:label "教育事件:E0002"@zh ;
+    turing:afterEvent turing:E0001 ;
+    turing:beforeEvent turing:E0003 ;
+    turing:confidence 0.98 ;
+    turing:eventType "教育事件" ;
+    turing:evidenceSentence "1931年，图灵考入剑桥大学国王学院攻读本科，并获得了数学一等荣誉" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6%E5%9B%BD%E7%8E%8B%E5%AD%A6%E9%99%A2> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6%E5%9B%BD%E7%8E%8B%E5%AD%A6%E9%99%A2> ;
+    turing:hasParticipant <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5>,
+        <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1931年" ;
+    turing:trigger "考入" .
+
+turing:E0003 a turing:Event ;
+    rdfs:label "教育事件:E0003"@zh ;
+    turing:afterEvent turing:E0002 ;
+    turing:beforeEvent turing:E0004 ;
+    turing:confidence 0.92 ;
+    turing:eventType "教育事件" ;
+    turing:evidenceSentence "1934年他以优异成绩毕业" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6%E5%9B%BD%E7%8E%8B%E5%AD%A6%E9%99%A2> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6%E5%9B%BD%E7%8E%8B%E5%AD%A6%E9%99%A2> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1934年" ;
+    turing:trigger "毕业" .
+
+turing:E0004 a turing:Event ;
+    rdfs:label "获奖荣誉事件:E0004"@zh ;
+    turing:afterEvent turing:E0003 ;
+    turing:beforeEvent turing:E0005 ;
+    turing:cause "证明中心极限定理的论文" ;
+    turing:confidence 0.86 ;
+    turing:eventType "获奖荣誉事件" ;
+    turing:evidenceSentence "1935年，22岁的他凭借证明中心极限定理的论文被选为国王学院研究员" ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1935年" ;
+    turing:trigger "被选为" .
+
+turing:E0005 a turing:Event ;
+    rdfs:label "教育事件:E0005"@zh ;
+    turing:afterEvent turing:E0004 ;
+    turing:beforeEvent turing:E0006 ;
+    turing:confidence 0.94 ;
+    turing:eventType "教育事件" ;
+    turing:evidenceSentence "1936年9月到1938年7月间，图灵大部分时间都在普林斯顿大学的教堂下学习，第二年被评选为简·伊丽莎·宝洁奖学金客座教授（Jane Eliza Procter Visiting Fellow）" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E6%99%AE%E6%9E%97%E6%96%AF%E9%A1%BF%E5%A4%A7%E5%AD%A6> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E6%99%AE%E6%9E%97%E6%96%AF%E9%A1%BF%E5%A4%A7%E5%AD%A6> ;
+    turing:hasParticipant turing:Jane_Eliza ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1938年" ;
+    turing:trigger "学习" .
+
+turing:E0006 a turing:Event ;
+    rdfs:label "任职事件:E0006"@zh ;
+    turing:afterEvent turing:E0005 ;
+    turing:beforeEvent turing:E0007 ;
+    turing:confidence 0.92 ;
+    turing:eventType "任职事件" ;
+    turing:evidenceSentence "从1938年9月起，图灵在英国密码破译组织政府密码和密码学校(GC&CS)兼职工作" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD%E5%AF%86%E7%A0%81%E7%A0%B4%E8%AF%91%E7%BB%84%E7%BB%87%E6%94%BF%E5%BA%9C%E5%AF%86%E7%A0%81%E5%92%8C%E5%AF%86%E7%A0%81%E5%AD%A6%E6%A0%A1> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E8%8B%B1%E5%9B%BD%E5%AF%86%E7%A0%81%E7%A0%B4%E8%AF%91%E7%BB%84%E7%BB%87%E6%94%BF%E5%BA%9C%E5%AF%86%E7%A0%81%E5%92%8C%E5%AF%86%E7%A0%81%E5%AD%A6%E6%A0%A1> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1938年" ;
+    turing:trigger "兼职工作" .
+
+turing:E0007 a turing:Event ;
+    rdfs:label "密码破译事件:E0007"@zh ;
+    turing:afterEvent turing:E0006 ;
+    turing:beforeEvent turing:E0008 ;
+    turing:confidence 0.94 ;
+    turing:eventType "密码破译事件" ;
+    turing:evidenceSentence "1939年7月，波兰密码局在华沙附近的会议上向英国和法国提供了恩尼格玛密码机机器的详细信息以及他们解密恩尼格玛密码机机器信息的方法" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E6%B3%95%E5%9B%BD> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E6%81%A9%E5%B0%BC%E6%A0%BC%E7%8E%9B%E5%AF%86%E7%A0%81%E6%9C%BA> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1939年" ;
+    turing:trigger "解密" .
+
+turing:E0008 a turing:Event ;
+    rdfs:label "获奖荣誉事件:E0008"@zh ;
+    turing:afterEvent turing:E0007 ;
+    turing:beforeEvent turing:E0009 ;
+    turing:confidence 0.86 ;
+    turing:eventType "获奖荣誉事件" ;
+    turing:evidenceSentence "图灵被授予1946年大英帝国勋章" ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1946年" ;
+    turing:trigger "授予" .
+
+turing:E0009 a turing:Event ;
+    rdfs:label "任职事件:E0009"@zh ;
+    turing:afterEvent turing:E0008 ;
+    turing:beforeEvent turing:E0010 ;
+    turing:confidence 0.96 ;
+    turing:eventType "任职事件" ;
+    turing:evidenceSentence "1945年到1948年，图灵在国家物理实验室负责自动计算引擎（ACE）的研究工作" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E5%9B%BD%E5%AE%B6%E7%89%A9%E7%90%86%E5%AE%9E%E9%AA%8C%E5%AE%A4> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E5%9B%BD%E5%AE%B6%E7%89%A9%E7%90%86%E5%AE%9E%E9%AA%8C%E5%AE%A4> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1948年" ;
+    turing:trigger "负责" .
+
+turing:E0010 a turing:Event ;
+    rdfs:label "任职事件:E0010"@zh ;
+    turing:afterEvent turing:E0009 ;
+    turing:beforeEvent turing:E0011 ;
+    turing:confidence 0.92 ;
+    turing:eventType "任职事件" ;
+    turing:evidenceSentence "1949年，他成为曼彻斯特大学计算机实验室的副主任，负责最早的真正的计算机——曼彻斯特一号的软件工作" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E6%9B%BC%E5%BD%BB%E6%96%AF%E7%89%B9%E5%A4%A7%E5%AD%A6%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%9E%E9%AA%8C%E5%AE%A4> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E6%9B%BC%E5%BD%BB%E6%96%AF%E7%89%B9%E5%A4%A7%E5%AD%A6%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%AE%9E%E9%AA%8C%E5%AE%A4> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1949年" ;
+    turing:trigger "副主任" .
+
+turing:E0011 a turing:Event ;
+    rdfs:label "获奖荣誉事件:E0011"@zh ;
+    turing:afterEvent turing:E0010 ;
+    turing:beforeEvent turing:E0012 ;
+    turing:confidence 0.92 ;
+    turing:eventType "获奖荣誉事件" ;
+    turing:evidenceSentence "他在1951年还被选为皇家学会（FRS）的成员" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E7%9A%87%E5%AE%B6%E5%AD%A6%E4%BC%9A> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E7%9A%87%E5%AE%B6%E5%AD%A6%E4%BC%9A> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1951年" ;
+    turing:trigger "被选为" .
+
+turing:E0012 a turing:Event ;
+    rdfs:label "发表事件:E0012"@zh ;
+    turing:afterEvent turing:E0011 ;
+    turing:beforeEvent turing:E0013 ;
+    turing:confidence 0.94 ;
+    turing:eventType "发表事件" ;
+    turing:evidenceSentence "他在1952年发表了一篇论文《形态发生的化学基础》（英语：The Chemical Basis of Morphogenesis）" ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E3%80%8A%E5%BD%A2%E6%80%81%E5%8F%91%E7%94%9F%E7%9A%84%E5%8C%96%E5%AD%A6%E5%9F%BA%E7%A1%80%E3%80%8B> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1952年" ;
+    turing:trigger "发表" .
+
+turing:E0013 a turing:Event ;
+    rdfs:label "死亡事件:E0013"@zh ;
+    turing:afterEvent turing:E0012 ;
+    turing:beforeEvent turing:E0014 ;
+    turing:cause "食用浸过氰化物溶液的苹果而" ;
+    turing:confidence 0.9 ;
+    turing:eventType "死亡事件" ;
+    turing:evidenceSentence "1954年，图灵因食用浸过氰化物溶液的苹果而死亡" ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:time "1954年" ;
+    turing:trigger "死亡" .
+
+turing:E0014 a turing:Event ;
+    rdfs:label "获奖荣誉事件:E0014"@zh ;
+    turing:afterEvent turing:E0013 ;
+    turing:beforeEvent turing:E0015 ;
+    turing:confidence 0.92 ;
+    turing:eventType "获奖荣誉事件" ;
+    turing:evidenceSentence "自1966年以来，图灵奖每年由计算机协会颁发给计算机界，为其提供技术或理论贡献" ;
+    turing:hasLocation <http://www.semanticweb.org/turing-kg#%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8D%8F%E4%BC%9A> ;
+    turing:hasObject <http://www.semanticweb.org/turing-kg#%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8D%8F%E4%BC%9A> ;
+    turing:hasParticipant <http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:hasSubject <http://www.semanticweb.org/turing-kg#%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8D%8F%E4%BC%9A> ;
+    turing:time "1966年" ;
+    turing:trigger "颁发" .
+
+<http://www.semanticweb.org/turing-kg#%E5%9B%BD%E5%AE%B6%E7%89%A9%E7%90%86%E5%AE%9E%E9%AA%8C%E5%AE%A4> a turing:Organization ;
+    rdfs:label "国家物理实验室"@zh ;
+    turing:entitySubtype "ResearchInstitute" .
+
+<http://www.semanticweb.org/turing-kg#%E8%AE%A1%E7%AE%97%E6%9C%BA%E5%8D%8F%E4%BC%9A> a turing:Organization ;
+    rdfs:label "计算机协会"@zh ;
+    turing:entitySubtype "Association" .
+
+<http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6%E5%9B%BD%E7%8E%8B%E5%AD%A6%E9%99%A2> a turing:Organization ;
+    rdfs:label "剑桥大学国王学院"@zh ;
+    turing:belongsTo <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6> ;
+    turing:entitySubtype "University" .
+
+<http://www.semanticweb.org/turing-kg#%E6%81%A9%E5%B0%BC%E6%A0%BC%E7%8E%9B%E5%AF%86%E7%A0%81%E6%9C%BA> a turing:Machine ;
+    rdfs:label "恩尼格玛密码机"@zh ;
+    turing:entitySubtype "CipherMachine" .
+
+<http://www.semanticweb.org/turing-kg#%E8%89%BE%E4%BC%A6%C2%B7%E5%9B%BE%E7%81%B5> a turing:Person ;
+    rdfs:label "艾伦·图灵"@zh ;
+    turing:bornIn <http://www.semanticweb.org/turing-kg#%E4%BC%A6%E6%95%A6> ;
+    turing:entitySubtype "Person" ;
+    turing:graduatedFrom <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6%E5%9B%BD%E7%8E%8B%E5%AD%A6%E9%99%A2> ;
+    turing:hasFather <http://www.semanticweb.org/turing-kg#%E6%9C%B1%E5%88%A9%E6%96%AF%C2%B7%E9%BA%A6%E5%B8%AD%E6%A3%AE%C2%B7%E5%9B%BE%E7%81%B5> ;
+    turing:hasMother turing:Ethel_Sara_Stoney ;
+    turing:participatedInCryptanalysis <http://www.semanticweb.org/turing-kg#%E6%81%A9%E5%B0%BC%E6%A0%BC%E7%8E%9B%E5%AF%86%E7%A0%81%E6%9C%BA> ;
+    turing:proposed <http://www.semanticweb.org/turing-kg#%E5%9B%BE%E7%81%B5%E6%B5%8B%E8%AF%95> ;
+    turing:proved <http://www.semanticweb.org/turing-kg#%E5%81%9C%E6%9C%BA%E9%97%AE%E9%A2%98> ;
+    turing:published <http://www.semanticweb.org/turing-kg#%E3%80%8A%E5%BD%A2%E6%80%81%E5%8F%91%E7%94%9F%E7%9A%84%E5%8C%96%E5%AD%A6%E5%9F%BA%E7%A1%80%E3%80%8B> ;
+    turing:researched <http://www.semanticweb.org/turing-kg#%E5%9B%BE%E7%81%B5%E6%B5%8B%E8%AF%95> ;
+    turing:studiedAt <http://www.semanticweb.org/turing-kg#%E5%89%91%E6%A1%A5%E5%A4%A7%E5%AD%A6%E5%9B%BD%E7%8E%8B%E5%AD%A6%E9%99%A2> ;
+    turing:workedAt <http://www.semanticweb.org/turing-kg#%E5%9B%BD%E5%AE%B6%E7%89%A9%E7%90%86%E5%AE%9E%E9%AA%8C%E5%AE%A4> .
+
