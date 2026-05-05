@@ -6,7 +6,7 @@
 
 ## 项目流程
 
-当前推荐执行顺序如下：
+运行顺序如下：
 
 ```text
 turing_corpus_clean.txt
@@ -355,7 +355,7 @@ pip install requests zhconv spacy sklearn-crfsuite joblib scikit-learn rdflib
 python -m spacy download zh_core_web_sm
 ```
 
-如果只查看已有 CSV 和 HTML，不需要安装全部依赖；如果要完整重跑抽取流程，则建议安装上述依赖。
+查看已有 CSV 和 HTML 不需要安装全部依赖；完整重跑抽取流程需要安装上述依赖。
 
 ## 当前结果概览
 
@@ -379,46 +379,8 @@ python -m spacy download zh_core_web_sm
 
 这些指标用于项目内部质量观察，不等同于人工标注准确率。
 
-## 推荐提交文件
+## 说明
 
-如果用于课程作业或项目展示，建议至少保留：
+本项目中的 `spider_turing.py` 和 `clean_data.py` 用于语料准备，`train_ner_crf.py` 和 `train_relation_clf.py` 用于模型训练；在已有语料和模型文件的情况下，可以直接运行抽取、评估、RDF 导出和可视化脚本。
 
-```text
-extract_entities.py
-extract_relations.py
-extract_events.py
-csv_to_rdf.py
-eval_extraction.py
-visualize_kg.py
-
-turing_corpus_clean.txt
-domain_aliases.csv
-entity_type_overrides.csv
-entity_blocklist.csv
-
-core_entities_auto.csv
-turing_triples_auto_audit.csv
-turing_triples_core.csv
-turing_events_auto_audit.csv
-turing_events_core.csv
-turing_instances.ttl
-turing-ontology.owl
-kg_dashboard.html
-
-ner_crf.model
-relation_bin_clf.model
-relation_multi_clf.model
-```
-
-可选保留：
-
-```text
-spider_turing.py
-clean_data.py
-train_ner_crf.py
-train_relation_clf.py
-turing_corpus.txt
-turing_triples_clean.csv
-```
-
-这些文件用于说明数据准备和模型训练来源，但不是每次运行当前知识图谱构建主流程都必须使用。
+生成结果以 CSV、TTL 和 HTML 三种形式保存，分别对应结构化抽取结果、RDF 实例数据和可视化展示页面。
